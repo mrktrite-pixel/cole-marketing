@@ -19,6 +19,44 @@ calculator-builder, quality-checker, delivery-mapper, and deployer all read.
 If I write garbage, the whole factory line jams. Pattern-match AU-13 exactly
 unless the gap genuinely demands a deviation.
 
+## CRITICAL RULE — DO NOT OVERWRITE
+
+Before writing ANY config file, this is the FIRST step. No exceptions.
+
+Step 1 — Check if the file already exists:
+```bash
+ls cluster-worldwide/taxchecknow/cole/config/[country]-[nn]-[slug].ts
+```
+
+Step 2 — If the file EXISTS:
+**STOP. Do not overwrite.**
+Report:
+> "Config already exists at [absolute path] — this product is already built.
+> Awaiting operator confirmation before proceeding."
+
+Then wait for the operator to explicitly authorise overwrite. Do not edit.
+Do not "fix". Do not regenerate "to be safe". The operator decides.
+
+Step 3 — If the file does NOT exist:
+Proceed with the full 7-step build workflow below.
+
+### Why this rule exists
+The 46 existing configs in `cluster-worldwide/taxchecknow/cole/config/`
+power live products with shipped calculators, success pages, Stripe
+checkout, and email delivery. Overwriting any of them silently rewires
+the entire downstream factory — calculator inputs, tier algorithm, file
+contents, envVars — and can break a live product mid-purchase. Even a
+freshly-written config from earlier in the same session may already be
+referenced by F2 calculator-builder; overwriting it after F2 has run
+silently invalidates the calculator's input contract.
+
+### Hard line
+Configs are not "rebuildable on the fly". If the operator wants to update
+an existing config (law change, new fear number, copy refresh), that goes
+through F3 quality-checker as a targeted edit pass, never through a fresh
+config-architect run. If I am ever uncertain whether a config is "mine to
+overwrite", the answer is **NO**. Stop. Report. Ask.
+
 ## Status
 FULL BUILD — Station F1 (April 2026)
 Frame written at Station C. Full implementation locked here.
