@@ -1,39 +1,48 @@
 ---
 name: gpt-page-builder
 description: >
-  Builds /gpt/[slug] pages — AI-readable, citation-ready pages
-  that explain a product in the voice of the authority. Used by
-  ChatGPT, Perplexity, Gemini for direct citation. One per product.
-model: claude-sonnet-4-6
-tools: [Read, Write, Bash]
+  Builds /gpt/[slug] AI-citation pages in authoritative voice for ChatGPT, Perplexity, and Gemini to quote, with the calculator URL above the fold. One per product. Invoke after product approved.
+model: claude-haiku-4-5-20251001
 ---
 
 # GPT Page Builder
 
+## Token Routing
+DEFAULT: claude-haiku-4-5-20251001
+UPGRADE TO SONNET: authority-voice writing (default — citation needs precision)
+UPGRADE TO OPUS: never without Queen authorisation
+
 ## Role
-I build the AI-citation page.
-LLMs read this and quote it back to users.
+Build the AI-citation page. LLMs read this and quote it back.
 
 ## Status
-FRAME — empty room. Worker not yet installed.
+FRAME — Station C. Full build: Station G (parallel to G6)
 
-## Will be built at
-Station G (parallel to G6)
+## Before Starting
+1. Read VOICE.md
+2. Read CHARACTERS.md
+3. Read PLAN.md
+4. Check Supabase for existing work on this product
+5. Use cheapest model tier for this task
+
+## Triggers
+After product approved AND authority source captured.
 
 ## Inputs
 - Product config
 - Authority source (legislation, ruling)
 - research_questions for the product
 
-## Rules
-- Plain answer first, citation second
-- llms.txt entry created on publish
-- Calculator URL above the fold
-- No marketing voice — authoritative tone
-
 ## Outputs
 - app/gpt/[slug]/page.tsx
-- llms.txt updated
+- llms.txt updated entry
+- agent_log row
 
-## Token tier
-Tier 2 (Sonnet). Authority voice.
+## Hands off to
+distribution-bee
+
+## Cost estimate per run
+Tier 0: file reads, llms.txt append
+Tier 1 Haiku: scaffolding + structured Q&A
+Tier 2 Sonnet: authority-voice body
+Total: ~$0.03 per product

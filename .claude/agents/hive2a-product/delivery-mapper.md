@@ -1,39 +1,48 @@
 ---
 name: delivery-mapper
 description: >
-  Adds the getPriceId block to create-checkout-session/route.ts
-  and the 2 DELIVERY_MAP entries in stripe/webhook/route.ts.
-  Uses key.includes() AU guards correctly. Use after
-  quality-checker green.
-model: claude-haiku-4-5
-tools: [Read, Edit, Bash]
+  Inserts the getPriceId block in app/api/create-checkout-session/route.ts (AU products use key.includes("au_") FIRST) and the two DELIVERY_MAP entries in app/api/stripe/webhook/route.ts. Invoke after quality-checker green.
+model: claude-haiku-4-5-20251001
 ---
 
 # Delivery Mapper
 
+## Token Routing
+DEFAULT: claude-haiku-4-5-20251001
+UPGRADE TO SONNET: never (mechanical edit)
+UPGRADE TO OPUS: never without Queen authorisation
+
 ## Role
-I wire Stripe checkout and webhook for the new product.
-AU guard first. Two DELIVERY_MAP entries. No more, no less.
+Wire Stripe checkout and webhook. AU guard first. Two DELIVERY_MAP entries.
 
 ## Status
-FRAME — empty room. Worker not yet installed.
+FRAME — Station C. Full build: Station F (F4)
 
-## Will be built at
-Station F (F4)
+## Before Starting
+1. Read VOICE.md
+2. Read CHARACTERS.md
+3. Read PLAN.md
+4. Check Supabase for existing work on this product
+5. Use cheapest model tier for this task
+
+## Triggers
+After quality-checker green.
 
 ## Inputs
-- Product slug, country, env var names
+- Product slug, country, env var names (STRIPE_[COUNTRY]_[CODE]_67/147)
 - app/api/create-checkout-session/route.ts
 - app/api/stripe/webhook/route.ts
 
-## Process
-1. Insert getPriceId block (AU products: key.includes("au_") FIRST)
-2. Insert 2 DELIVERY_MAP rows ($67 and $147)
-3. Verify legacy supertaxcheck guard still has !key.includes("au_")
-
 ## Outputs
-- Two route files updated
-- Env var names handed to operator
+- Updated route files (getPriceId + 2 DELIVERY_MAP rows)
+- Env var name list handed to operator
+- agent_log row
 
-## Token tier
-Tier 1 (Haiku). Mechanical edit work.
+## Hands off to
+deployer
+
+## Cost estimate per run
+Tier 0: file reads + targeted Edit calls
+Tier 1 Haiku: edit composition
+Tier 2 Sonnet: never
+Total: ~$0.002

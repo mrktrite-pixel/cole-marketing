@@ -1,41 +1,48 @@
 ---
 name: article-builder
 description: >
-  Builds question-answer articles at /questions/[slug]. H1 = the
-  exact question. Direct answer in paragraph 1. 3 calculator
-  links embedded. FAQPage schema. The article factory at scale.
-model: claude-sonnet-4-6
-tools: [Read, Write, Bash]
+  Builds question articles at /questions/[slug] with H1 = exact question, direct 50-word answer, three calculator links, and FAQPage schema. Invoke per research_questions row or in Station P scheduled batches.
+model: claude-haiku-4-5-20251001
 ---
 
 # Article Builder
 
+## Token Routing
+DEFAULT: claude-haiku-4-5-20251001
+UPGRADE TO SONNET: opening paragraph (the 50-word direct answer is critical)
+UPGRADE TO OPUS: never without Queen authorisation
+
 ## Role
-I publish 3 articles a week.
-H1 is the verbatim question. Direct answer first. Links to calc.
+Publish 3 articles a week. H1 = verbatim question. Direct answer first. Links to calculator.
 
 ## Status
-FRAME — empty room. Worker not yet installed.
+FRAME — Station C. Full build: Station G (G6) and Station P (at scale)
 
-## Will be built at
-Station G (G6) and Station P (at scale)
+## Before Starting
+1. Read VOICE.md
+2. Read CHARACTERS.md
+3. Read PLAN.md
+4. Check Supabase for existing work on this product
+5. Use cheapest model tier for this task
+
+## Triggers
+- New row in research_questions with status=ready
+- Station P scheduled batch (10 per session, 3/wk publish cadence)
 
 ## Inputs
-- research_questions table (920 questions total)
+- research_questions row (verbatim question, product link)
 - VOICE.md
-- Authority sources
-
-## Rules
-- H1 = exact question (never reworded)
-- Direct answer in paragraph 1 (50 words max)
-- 3 calculator links embedded naturally
-- FAQPage schema
-- Authority citation
-- No banned phrases
+- Authority source
 
 ## Outputs
 - app/questions/[slug]/page.tsx
-- Hand-off to Content Manager → Distribution Bee
+- agent_log row
 
-## Token tier
-Tier 2 (Sonnet) for first paragraph. Tier 1 (Haiku) for body.
+## Hands off to
+content-manager → distribution-bee
+
+## Cost estimate per run
+Tier 0: file + Supabase reads
+Tier 1 Haiku: body, FAQ, schema
+Tier 2 Sonnet: opening 50-word direct answer
+Total: ~$0.02 per article

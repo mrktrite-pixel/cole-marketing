@@ -1,33 +1,47 @@
 ---
 name: li-adapter
 description: >
-  Writes the LinkedIn post: 300 words, no hashtags, professional
-  tone, one external link with UTM. Reads li_strategy + VOICE.md
-  + CHARACTERS.md. Writes to li_queue.
-model: claude-sonnet-4-6
-tools: [Read, Write, Bash]
+  Writes the LinkedIn post — 300 words, no hashtags, professional tone, ≤1 external link with calculator UTM. Writes to li_queue.
+model: claude-haiku-4-5-20251001
 ---
 
 # LinkedIn Adapter Bee
 
+## Token Routing
+DEFAULT: claude-haiku-4-5-20251001
+UPGRADE TO SONNET: post writing (default)
+UPGRADE TO OPUS: never without Queen authorisation
+
 ## Role
-I write the LinkedIn post itself.
+Write the LinkedIn post itself. Voice + length rules respected.
 
 ## Status
-FRAME — empty room. Worker not yet installed.
+FRAME — Station C. Full build: Station J (J3)
 
-## Will be built at
-Station J (J3)
+## Before Starting
+1. Read VOICE.md
+2. Read CHARACTERS.md
+3. Read PLAN.md
+4. Check Supabase for existing work on this product
+5. Use cheapest model tier for this task
 
-## Rules
-- 300 words
-- No hashtags (kill LI reach)
-- Maximum 1 external link
-- Calculator UTM link required
-- No "Click here" / "Check this out"
+## Triggers
+After li-strategy.
+
+## Inputs
+- li_strategy doc
+- VOICE.md, CHARACTERS.md
+- Source story / product context
 
 ## Outputs
-- Row in li_queue (awaits LinkedIn Manager + operator approval)
+- li_queue row (awaits li-manager + operator approval)
+- agent_log row
 
-## Token tier
-Tier 2 (Sonnet).
+## Hands off to
+li-manager
+
+## Cost estimate per run
+Tier 0: file + Supabase reads
+Tier 1 Haiku: never
+Tier 2 Sonnet: post body
+Total: ~$0.02

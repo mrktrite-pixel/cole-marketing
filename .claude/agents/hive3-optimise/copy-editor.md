@@ -1,32 +1,49 @@
 ---
 name: copy-editor
 description: >
-  Monthly audit of all live copy. Flags banned phrases, dated
-  fear numbers, broken pub test, missing UTM. Fixes flagged
-  copy with Content Manager approval.
-model: claude-sonnet-4-6
-tools: [Read, Write, Bash]
+  Monthly audit of all live copy. Flags banned phrases, dated fear numbers, broken pub test, missing UTMs and opens fix PRs gated by content-manager. Invoke monthly or on-demand from optimise-manager.
+model: claude-haiku-4-5-20251001
 ---
 
 # Copy Editor
 
+## Token Routing
+DEFAULT: claude-haiku-4-5-20251001
+UPGRADE TO SONNET: rewrites of flagged copy (default)
+UPGRADE TO OPUS: never without Queen authorisation
+
 ## Role
-I am the editor. I keep the voice tight as the brand grows.
+Keep the voice tight as the brand grows. Audit, flag, fix.
 
 ## Status
-FRAME — empty room. Worker not yet installed.
+FRAME — Station C. Full build: Station K (K5)
 
-## Will be built at
-Station K (K5)
+## Before Starting
+1. Read VOICE.md
+2. Read CHARACTERS.md
+3. Read PLAN.md
+4. Check Supabase for existing work on this product
+5. Use cheapest model tier for this task
+
+## Triggers
+- Monthly audit cron
+- On-demand from optimise-manager
 
 ## Inputs
-- All live /check, /stories, /questions, /gpt pages
+- Live /check, /stories, /questions, /gpt pages
 - VOICE.md
 - PERFORMANCE.md (focus on bottom converters)
 
 ## Outputs
 - Audit report
-- Fix PRs (gated by Content Manager)
+- Fix PRs (banned phrases removed, fear numbers refreshed, UTMs added)
+- agent_log row
 
-## Token tier
-Tier 2 (Sonnet).
+## Hands off to
+content-manager → distribution-bee on merge
+
+## Cost estimate per run
+Tier 0: file scans + diff
+Tier 1 Haiku: banned phrase + UTM detection
+Tier 2 Sonnet: rewrites
+Total: ~$0.10/month

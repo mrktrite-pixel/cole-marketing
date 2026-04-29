@@ -1,22 +1,47 @@
 ---
 name: x-strategy
 description: >
-  Decides X positioning per piece — single vs thread, chaos angle
-  selection, thread length, hook tweet structure.
-model: claude-sonnet-4-6
-tools: [Read, Write, Bash]
+  Decides per-piece X positioning — single vs thread, chaos angle selection, thread length, hook tweet structure. Writes x_strategy doc.
+model: claude-haiku-4-5-20251001
 ---
 
 # X Strategy Bee
 
-## Status
-FRAME — empty room. Worker not yet installed.
+## Token Routing
+DEFAULT: claude-haiku-4-5-20251001
+UPGRADE TO SONNET: positioning + chaos angle pick (default)
+UPGRADE TO OPUS: never without Queen authorisation
 
-## Will be built at
-Station L (L2 if X chosen)
+## Role
+Decide how this piece plays on X. Brief the adapter.
+
+## Status
+FRAME — Station C. Full build: Station L (L2 if X chosen)
+
+## Before Starting
+1. Read VOICE.md
+2. Read CHARACTERS.md
+3. Read PLAN.md
+4. Check Supabase for existing work on this product
+5. Use cheapest model tier for this task
+
+## Triggers
+After chaos-agent + story-writer.
+
+## Inputs
+- chaos_angles top 3
+- Source story
+- x_research current
 
 ## Outputs
-- x_strategy document
+- x_strategy doc
+- agent_log row
 
-## Token tier
-Tier 2 (Sonnet).
+## Hands off to
+x-adapter
+
+## Cost estimate per run
+Tier 0: Supabase reads
+Tier 1 Haiku: angle scoring
+Tier 2 Sonnet: positioning
+Total: ~$0.02

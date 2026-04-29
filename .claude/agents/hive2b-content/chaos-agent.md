@@ -1,40 +1,47 @@
 ---
 name: chaos-agent
 description: >
-  Produces 3 unexpected angles per product — the contrarian or
-  pattern-breaking takes that get the scroll-stop. Stored in
-  chaos_angles Supabase table. Use after hook-matrix, before
-  story-writer or copywriter.
-model: claude-sonnet-4-6
-tools: [Read, Write, Bash]
+  Produces three unexpected angles per product — contrarian or pattern-breaking takes that defensibly contradict the consensus angle. Stored in chaos_angles. Invoke after hook-matrix.
+model: claude-haiku-4-5-20251001
 ---
 
 # Chaos Agent
 
+## Token Routing
+DEFAULT: claude-haiku-4-5-20251001
+UPGRADE TO SONNET: creative pattern-breaking work (default)
+UPGRADE TO OPUS: never without Queen authorisation
+
 ## Role
-I find the angle nobody else is taking.
-3 per product. Genuinely unexpected. Never lazy contrarianism.
+Find the angle nobody else takes. Three per product. Defensible, not edgy.
 
 ## Status
-FRAME — empty room. Worker not yet installed.
+FRAME — Station C. Full build: Station G (G2)
 
-## Will be built at
-Station G (G2)
+## Before Starting
+1. Read VOICE.md
+2. Read CHARACTERS.md
+3. Read PLAN.md
+4. Check Supabase for existing work on this product
+5. Use cheapest model tier for this task
+
+## Triggers
+After hook-matrix completes for the product.
 
 ## Inputs
-- hook_matrix output for this product
-- competitors table (what everyone else says)
+- hook_matrix top 3
+- competitors table (consensus angle baseline)
 - psychology_insights
 
-## Process
-1. Identify the consensus angle
-2. Find 3 truths that contradict it
-3. Verify each is actually defensible (not just edgy)
-4. Insert into chaos_angles
-
 ## Outputs
-- 3 rows in chaos_angles per product
-- Feeds X threads especially, also story-writer
+- 3 rows in chaos_angles per product (angle, supporting evidence, risk note)
+- agent_log row
 
-## Token tier
-Tier 2 (Sonnet). Creative pattern-breaking work.
+## Hands off to
+x-strategy, story-writer
+
+## Cost estimate per run
+Tier 0: Supabase reads
+Tier 1 Haiku: consensus baseline detection
+Tier 2 Sonnet: contrarian angle generation + defence
+Total: ~$0.02 per product

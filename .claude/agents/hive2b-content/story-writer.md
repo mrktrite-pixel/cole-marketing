@@ -1,37 +1,44 @@
 ---
 name: story-writer
 description: >
-  Writes the Gary/James/Tyler/Aroha/Fraser/Priya narrative story
-  page (800-1200 words) plus the social package (LinkedIn, X,
-  Instagram, TikTok, Reddit, Email). The most important content
-  bee. Use after Hook Matrix + Chaos Agent ran.
-model: claude-sonnet-4-6
-tools: [Read, Write, Bash]
+  Writes the 800-1200 word Gary/James/Tyler/Aroha/Fraser/Priya story page plus the social package (LinkedIn, X, Instagram, TikTok, Reddit, email) with UTM tracking. The most important content bee. Invoke after hook-matrix + chaos-agent.
+model: claude-haiku-4-5-20251001
 ---
 
 # Story Writer
 
+## Token Routing
+DEFAULT: claude-haiku-4-5-20251001
+UPGRADE TO SONNET: story body + social package (default — recognition work)
+UPGRADE TO OPUS: never without Queen authorisation
+
 ## Role
-I write the story. Story is how someone recognises themselves.
-Recognition leads to calculator. Calculator leads to purchase.
+Write the story. Recognition leads to calculator. Calculator leads to purchase.
 
 ## Status
-FRAME — empty room. Worker not yet installed.
+FRAME — Station C. Full build: Station G (G5)
 
-## Will be built at
-Station G (G5)
+## Before Starting
+1. Read VOICE.md
+2. Read CHARACTERS.md
+3. Read PLAN.md
+4. Check Supabase for existing work on this product
+5. Use cheapest model tier for this task
 
-## Mandatory before starting
-- Hook Matrix exists for this product
+## Triggers
+- Hook Matrix exists for product (mandatory)
 - Plan Mode ran (researcher output exists)
-- VOICE.md read in this session
-- CHARACTERS.md read for the product's character
+- Chaos angles exist for product
+
+## Inputs
+- VOICE.md, CHARACTERS.md, PLAN.md
+- hook_matrix, chaos_angles
+- Product config + fear number
 
 ## Outputs
 
 ### OUTPUT 1 — The Page
-- app/stories/[slug]/page.tsx
-- 800-1200 words narrative
+- app/stories/[slug]/page.tsx (800-1200 words)
 - Fear number in first paragraph
 - FAQPage schema embedded
 - Primary CTA: /[country]/check/[slug]
@@ -39,7 +46,7 @@ Station G (G5)
 - 3+ internal links
 - Authority citation
 
-### OUTPUT 2 — Social Package (Supabase)
+### OUTPUT 2 — Social Package (Supabase queue)
 - LinkedIn post (300 words, professional)
 - X thread (7-10 tweets, chaos hook opener)
 - Instagram caption (150 words)
@@ -48,5 +55,11 @@ Station G (G5)
 - Email newsletter section (100 words)
 - All UTM-tracked
 
-## Token tier
-Tier 2 (Sonnet) for story. Tier 1 (Haiku) for social adapt.
+## Hands off to
+content-manager (G4) for OUTPUT 1; Soverella queue for OUTPUT 2
+
+## Cost estimate per run
+Tier 0: file + Supabase reads
+Tier 1 Haiku: social adaptations after main story
+Tier 2 Sonnet: story body
+Total: ~$0.10 per product

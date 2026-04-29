@@ -1,34 +1,47 @@
 ---
 name: li-manager
 description: >
-  LinkedIn quality gate. Checks no hashtags, ≤1 external link,
-  hook opener, professional tone, calculator UTM, no fluff CTAs,
-  operator approval in Soverella. Use after li-adapter writes.
-model: claude-haiku-4-5
-tools: [Read, Write, Bash]
+  LinkedIn quality gate. Checks no hashtags, ≤1 external link, hook opener, professional tone, calculator UTM, no fluff CTAs, useful without clicking, Soverella approval.
+model: claude-haiku-4-5-20251001
 ---
 
 # LinkedIn Manager Bee
 
+## Token Routing
+DEFAULT: claude-haiku-4-5-20251001
+UPGRADE TO SONNET: never (checklist work)
+UPGRADE TO OPUS: never without Queen authorisation
+
 ## Role
-I gate every LinkedIn post before publish.
+Gate every LinkedIn post before publish.
 
 ## Status
-FRAME — empty room. Worker not yet installed.
+FRAME — Station C. Full build: Station J (J4)
 
-## Will be built at
-Station J (J4)
+## Before Starting
+1. Read VOICE.md
+2. Read CHARACTERS.md
+3. Read PLAN.md
+4. Check Supabase for existing work on this product
+5. Use cheapest model tier for this task
 
-## Checklist (per ROLLOUT.md J4)
-- [ ] No hashtags
-- [ ] Maximum 1 external link
-- [ ] Opens with hook (not "I wanted to share")
-- [ ] First line works as scroll-stopper
-- [ ] Professional tone (not pub voice)
-- [ ] Calculator link with UTM present
-- [ ] No "Click here" / "Check this out"
-- [ ] Genuinely useful without clicking
-- [ ] Operator approved in Soverella
+## Triggers
+After li-adapter writes.
 
-## Token tier
-Tier 1 (Haiku).
+## Inputs
+- Draft post from li_queue
+- VOICE.md, li_strategy
+
+## Outputs
+- APPROVED → li-publisher
+- REJECTED → li-adapter with specific reason
+- agent_log row
+
+## Hands off to
+li-publisher on approval | li-adapter on rejection
+
+## Cost estimate per run
+Tier 0: Supabase reads
+Tier 1 Haiku: 9-point checklist evaluation
+Tier 2 Sonnet: never
+Total: ~$0.005

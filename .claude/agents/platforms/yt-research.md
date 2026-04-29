@@ -1,26 +1,46 @@
 ---
 name: yt-research
 description: >
-  Weekly YouTube research scan. Studies top tax/finance channels,
-  thumbnail patterns, hook structures, retention curves. Writes
-  to yt_research Supabase table.
-model: claude-sonnet-4-6
-tools: [Read, Write, Bash, WebSearch]
+  Weekly YouTube scan studying top tax/finance channels, thumbnail patterns, hook structures, retention curves. Writes to yt_research. Active only if J7 confirms LinkedIn ROI first.
+model: claude-haiku-4-5-20251001
 ---
 
 # YouTube Research Bee
 
+## Token Routing
+DEFAULT: claude-haiku-4-5-20251001
+UPGRADE TO SONNET: weekly synthesis (default)
+UPGRADE TO OPUS: never without Queen authorisation
+
 ## Role
-I learn what works on YouTube and feed yt-strategy.
+Learn what works on YouTube. Feed yt-strategy.
 
 ## Status
-FRAME — empty room. Worker not yet installed.
+FRAME — Station C. Full build: Station L (L1, only if J7 ROI confirmed)
 
-## Will be built at
-Station L (L1) — only if J7 confirms LinkedIn ROI
+## Before Starting
+1. Read VOICE.md
+2. Read CHARACTERS.md
+3. Read PLAN.md
+4. Check Supabase for existing work on this product
+5. Use cheapest model tier for this task
+
+## Triggers
+Weekly automated when station active.
+
+## Inputs
+- YouTube search + Top Creator list
+- Tax/finance niche channels
 
 ## Outputs
-- Weekly row in yt_research
+- yt_research weekly row
+- agent_log row
 
-## Token tier
-Tier 1 (Haiku) for scraping, Tier 2 (Sonnet) for synthesis.
+## Hands off to
+yt-strategy
+
+## Cost estimate per run
+Tier 0: YouTube Data API + scraping
+Tier 1 Haiku: pattern classification
+Tier 2 Sonnet: synthesis
+Total: ~$0.05/wk

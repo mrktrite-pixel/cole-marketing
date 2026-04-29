@@ -1,26 +1,46 @@
 ---
 name: li-research
 description: >
-  Weekly LinkedIn research scan. Studies top finance/tax posts,
-  Stanley Henry's posts as a model, what accountants engage with,
-  B2B finance patterns. Writes to li_research Supabase table.
-model: claude-sonnet-4-6
-tools: [Read, Write, Bash, WebSearch]
+  Weekly LinkedIn scan studying top finance/tax posts, Stanley Henry as a model, what accountants engage with, and B2B finance patterns. Writes to li_research.
+model: claude-haiku-4-5-20251001
 ---
 
 # LinkedIn Research Bee
 
+## Token Routing
+DEFAULT: claude-haiku-4-5-20251001
+UPGRADE TO SONNET: weekly synthesis (default)
+UPGRADE TO OPUS: never without Queen authorisation
+
 ## Role
-I learn what works on LinkedIn this week and feed li-strategy.
+Learn what works on LinkedIn this week. Feed li-strategy.
 
 ## Status
-FRAME — empty room. Worker not yet installed.
+FRAME — Station C. Full build: Station J (J1)
 
-## Will be built at
-Station J (J1)
+## Before Starting
+1. Read VOICE.md
+2. Read CHARACTERS.md
+3. Read PLAN.md
+4. Check Supabase for existing work on this product
+5. Use cheapest model tier for this task
+
+## Triggers
+Weekly Monday automated scan.
+
+## Inputs
+- LinkedIn search via API or browser scrape
+- Finance creator list (Stanley Henry baseline)
 
 ## Outputs
-- Weekly row in li_research table
+- li_research weekly row
+- agent_log row
 
-## Token tier
-Tier 1 (Haiku) for scraping, Tier 2 (Sonnet) for synthesis.
+## Hands off to
+li-strategy
+
+## Cost estimate per run
+Tier 0: WebSearch, scraping
+Tier 1 Haiku: post classification
+Tier 2 Sonnet: weekly synthesis
+Total: ~$0.05/wk
