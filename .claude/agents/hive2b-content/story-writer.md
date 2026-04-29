@@ -338,6 +338,74 @@ Full TikTok script comes from tt-strategy + tt-adapter later.
 - Calculator link with `utm_source=email_newsletter&utm_medium=email&utm_campaign=[slug]`
 - Plain text — no markdown, no HTML
 
+### Step 4.5 — Social Package URL Audit (HARD GATE before content_jobs)
+
+Before storing the social package, run Check 4 + Check 5 from G4 on EACH
+of the 5 platform outputs. This gate exists because:
+
+> Sonnet has been observed to hallucinate "short" calculator URLs like
+> `calculator.taxchecknow.com/au-19` (incident 2026-04-30, AU-19 G5 run).
+> The story page passes self-audit because its CTAs are correct, but the
+> social outputs slipped through unaudited and shipped fake URLs that
+> would 404 every click. This step catches that.
+
+**CHECK 4 — CTA URL exact match**
+For each of: linkedin_post, x_thread (final tweet), ig_caption (bio
+reference may be off-text — verify utm_campaign present in output_data),
+tiktok_hook (no URL expected — skip), email_section.
+
+The URL must:
+- Contain literal substring `taxchecknow.com`
+- Contain literal substring `/check/[product-slug]` (e.g. `/check/frcgw-clearance-certificate`)
+- NOT contain `calculator.taxchecknow.com` (fake subdomain)
+- NOT match pattern `taxchecknow.com/au-19` or any short-slug form (fake short URL)
+- Match the canonical pattern: `https://www.taxchecknow.com/[country]/check/[slug]`
+
+If any platform's URL fails → regenerate just that output's URL block →
+re-run Check 4 → up to 3 iterations → escalate if still failing.
+
+**CHECK 5 — UTM parameters present**
+Every URL must contain all three:
+- `utm_source=`
+- `utm_medium=`
+- `utm_campaign=`
+
+Platform UTM values (exact — these are the canonical forms):
+
+| Platform | utm_source | utm_medium |
+|---|---|---|
+| LinkedIn | `social_linkedin` | `post` |
+| X (thread) | `social_x` | `thread` |
+| Instagram | `social_instagram` | `reel` |
+| TikTok | `social_tiktok` | `video` |
+| Email | `email_newsletter` | `email` |
+
+`utm_campaign` is always the product slug (e.g. `au-19-frcgw-clearance-certificate`).
+
+If any platform's UTM is missing or wrong → fix the URL → re-run Check 5.
+
+**Only when all 5 platform outputs pass both Check 4 + Check 5 →
+proceed to Step 5 content_jobs INSERT.**
+
+Audit script (run inline, not bash sed):
+```bash
+node -e "
+const j = JSON.parse(require('fs').readFileSync('[output-data-temp].json'));
+const slug = j.utm_campaign;
+const urlOK = (s, source, medium) => s.includes('taxchecknow.com/') && s.includes('/check/') && s.includes(slug) && !s.includes('calculator.taxchecknow') && s.includes('utm_source=' + source) && s.includes('utm_medium=' + medium) && s.includes('utm_campaign=' + slug);
+const li = j.linkedin_post;
+const x7 = j.x_thread[j.x_thread.length - 1];
+const em = j.email_section;
+console.log('LI ok:', urlOK(li, 'social_linkedin', 'post'));
+console.log('X-7 ok:', urlOK(x7, 'social_x', 'thread'));
+console.log('Email ok:', urlOK(em, 'email_newsletter', 'email'));
+"
+```
+
+All three must print `ok: true`. (TikTok hook has no URL — skip. Instagram
+caption uses bio link which is platform-side, but the JSON still records
+the canonical URL via `output_data.utm_campaign` for audit purposes.)
+
 ### Step 5 — Store social package
 
 Try Supabase first:
