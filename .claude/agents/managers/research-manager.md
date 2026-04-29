@@ -38,7 +38,7 @@ LIVE — Station E (E6 — installs LAST after E1-E5). The quality gate that clo
 cd C:\Users\MATTV\CitationGap\cluster-worldwide\taxchecknow
 npx ts-node --project cole/tsconfig.json scripts/cole-rm-fetch.ts
 ```
-The helper returns one JSON object:
+The helper returns one JSON object covering BOTH `status='pending'` (first review) and `status='needs_review'` (re-review after the underlying issue was fixed):
 - `pending_count` — N
 - `pending_gaps[]` — each with id, topic, site, ai_error, correct_law, search_volume, urgency, recommended_product, status, plus enriched `research_questions_count` and `research_questions_match[]`
 - `products_md_keys[]` — product_keys parsed from PRODUCTS.md headers (used by CHECK 2)
