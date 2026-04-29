@@ -1,48 +1,57 @@
 # PERFORMANCE.md
 # Updated by Analytics Reader every Monday
 
-## Week Ending 2026-04-29
+## Week of 2026-04-29
 
-Status: BASELINE — factory at Station C, no marketing OS content shipped yet.
-taxchecknow.com live since 2026-04-24 (5 days). Adaptive Queen / Hive 3 installs at Station K.
+Status: BASELINE — no purchase / lead / email data this period. taxchecknow.com live since 2026-04-24 (5 days). Marketing OS at Station E (research layer); content factory not yet shipping. Snapshot pulled 2026-04-29T07:57:43Z from Supabase via `cole-analytics-snapshot.ts`.
 
-### Data source status
-- Supabase: connected, tables empty (purchases 0, email_log 0, decision_sessions 0)
-- GA4: not wired (no service-account key)
-- Search Console: not wired
-- Stripe webhook → Supabase: handler exists, no rows recorded
-- Email (Resend): key present, no sends logged
+### Revenue
+No purchases this period (baseline).
+Total: £0 (paid: $0 across currencies) | Products sold: 0
+Top product: none recorded.
+Stripe webhook handler exists; redeploy after env-var injection still required before first checkout will land.
 
-### Top Converting Products (this week)
-None — 0 purchases recorded.
+### Leads
+No leads this period (baseline).
+Total captured: 0 | Converted: 0
+By site|country: no rows.
+Lead capture form not yet wired into any calculator success page.
 
-### Top Converting Channels
-None — no utm data yet.
+### Email
+No email activity this period (baseline).
+Sent: 0 | Failed: 0 | Open rate: n/a
+Resend API key present; queue and templates exist but nothing has been triggered (no purchases to fire receipts).
 
-### Bottom Performers
-N/A — nothing has run.
+### Content Published
+No content published this period (baseline).
+Pages: 0 | Types: none | IndexNow pings: 0 | Google Indexing pings: 0
+Content factory installs at Station G. Story writer / hook generator / distribution bees not yet built.
+
+### Psychology Insights (from E3)
+- AU_baseline — fear: dollar_amount $47,000 (CGT main-residence trap, Gary) — best_utm_source: reddit
+- UK_baseline — fear: dollar_amount £240,000 (pension-IHT, James) — best_utm_source: linkedin
+- US_baseline — fear: dollar_amount $340,000 (Section 174 amortisation, Tyler) — best_utm_source: reddit
+- NZ_baseline — fear: dollar_amount $49,500 NZD (bright-line agreement-date trap, Aroha) — best_utm_source: google
+- CAN_baseline — fear: dollar_amount $180,000 CAD (EOT exit, Fraser) — best_utm_source: google
+- Nomad_baseline — fear: dollar_amount $34,000 AUD (treaty tiebreaker, Priya) — best_utm_source: google
+Total insights on file: 6 (0 from data, 6 baseline). Refresh required once first purchases land.
+
+### Competitor Landscape (from E4)
+17 competitors logged across AU / UK / US / NZ / CAN / Nomad. See COMPETITORS.md for the per-country breakdown and citation-gap angles.
 
 ### Platform Performance
-LinkedIn / YouTube / Reddit / IG / X / TikTok: not yet installed (Stations J–O).
+All zeros until Station J (LinkedIn) complete. Confirmed.
+LinkedIn / YouTube / Reddit / IG / X / TikTok publishers not yet installed (Stations J–O).
 
 ### AI Citations
-Not measured this week.
+Not yet measured (Station K6 — GEO Optimiser).
+gap_queue holds 3 rows seeded at E1; research_questions holds 25 rows for AU-01 from E2 — both feed Station K6 once it ships.
 
-### Articles
-Published this week: 0 of 920 target. Total published: 0/920.
+### Actions This Week
+1. Complete Station E6 (research-manager quality gate) before launching the content factory at Station G — without it, hook/story output has no review layer.
+2. Smoke-test one live checkout end-to-end (e.g. /au/check/cgt-main-residence-trap $67) to confirm the Stripe webhook → Supabase `purchases` path actually writes a row; current 0-count may be wiring, not absence-of-traffic.
+3. Wire GA4 service-account credentials into the snapshot helper so next Monday's report has session + utm_source attribution to validate or overturn the 6 baseline psychology assumptions.
 
-### Psychology Insights
-Source: customer-psychologist run 2026-04-29 (6 insights, 0 from data, 6 baseline)
-Top fear format this period: dollar_amount (100% of insights — baseline only, no purchase data)
-Top converting demographic: baseline only — no data yet (per-country defaults: Gary 55-65 AU, James 50-58 UK, Tyler 40-50 US, Aroha 40-48 NZ, Fraser 48-55 CAN, Priya 30-38 Nomad)
-Top converting source: baseline only — no data yet (assumed: reddit AU/US, linkedin UK, google NZ/CAN/Nomad)
-Notes: baseline only — no data yet. 6 baseline rows written (one per country: AU/UK/US/NZ/CAN/Nomad), each tagged ASSUMED, sourced from CHARACTERS.md fear numbers and PRODUCTS.md headline figures. Refresh once first purchases land in Supabase.
+---
 
-### Operator action items (flagged from this run)
-1. Verify Stripe price IDs are set in Vercel and a redeploy fired after 2026-04-24.
-2. Smoke-test one checkout end-to-end (e.g. /au/check/cgt-main-residence-trap $67) and confirm a row lands in Supabase `purchases`.
-3. Add GA4 service-account credentials so next week's report has session + conversion data.
-4. Continue rollout: D → E → F → G → H before any optimise loop can produce signal.
-
-### Next meaningful report
-2026-05-06 — only if at least one piece of content has shipped through the factory and at least one Stripe purchase has been recorded.
+## Prior Weeks (history)
