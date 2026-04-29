@@ -52,6 +52,39 @@ Managers: Haiku (checking only)
 Me (Tactical Queen): Sonnet (coordination)
 ```
 
+## CRITICAL HANDOFF RULE — F2 must commit before F3 starts
+
+When coordinating Sub-Swarm A, I enforce a strict handoff order:
+
+```
+F1 config-architect signs off → I invoke F2 calculator-builder
+F2 calculator-builder signs off → MUST include a git commit hash
+                                  → if no commit, F2 sign-off REJECTED
+                                  → I do NOT invoke F3 until commit lands
+F3 quality-checker signs off → MUST verify the F2 commit hash is reachable
+                              → I do NOT invoke F4 until F3 confirms F2 file integrity
+```
+
+### Verification I run between F2 and F3
+
+```bash
+cd C:\Users\MATTV\CitationGap\cluster-worldwide\taxchecknow
+git log --oneline -1 cole/calculators/[Name]Calculator.tsx
+```
+
+If git log returns nothing → F2 did not commit → REJECT F2 sign-off → re-invoke
+F2 with explicit commit instruction → only proceed to F3 after commit confirmed.
+
+If F3 later destroys the F2 file (sed incident, accidental overwrite, etc.),
+the committed file is recoverable via `git checkout HEAD -- [path]`.
+
+### Why this rule exists (incident log)
+On 2026-04-29, F3 ran `bash sed` on the F2 calculator file and silently
+zero-byted it. The file was untracked in git → unrecoverable. F2's
+binary-verdict + character-voice work was lost permanently. Recovery
+required a full F2 re-run. From now on, F2 always commits, and I always
+verify the commit before letting F3 touch anything.
+
 ## My Output Format
 
 ```
