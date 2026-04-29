@@ -124,35 +124,31 @@ grep -n "supertaxcheck\|LEGACY" app/api/create-checkout-session/route.ts | head 
 Pass: AU blocks all start with `key.includes("au_")` AND legacy blocks
 start with `!key.includes("au_")`.
 
-### CHECK 3 — `delivery` field absent in config
-The F1 config must NOT have a top-level `delivery: {...}` field. Drive
-URLs live in `files[].driveUrl` (which is empty strings — see Check 4).
+### CHECK 3 — `delivery` field present with empty string values
+The F1 config MUST have a top-level `delivery` field with empty string
+values. The ProductConfig type requires the field. Empty strings encode
+"Drive integration off" (correct for the inline-files delivery model).
+Real Drive URLs would encode "Drive integration on" — currently never used.
+
+This rule was reconciled with F1 (which mandates the empty-string form):
+F1 wins. The field must exist. The values must be empty strings.
 
 ```bash
-grep -n "^  delivery:" cole/config/au-19-frcgw-clearance-certificate.ts
+grep -nE '^  delivery:' cole/config/au-19-frcgw-clearance-certificate.ts
 ```
 
-Pass: zero matches.
-Fail: any match — the config has the legacy delivery field that should
-have been stripped at F1.
+Pass: exactly one match showing
+`delivery: { tier1DriveEnvVar: "", tier2DriveEnvVar: "" }`.
 
-(Note: this is the inverse of an earlier rule that REQUIRED delivery field
-with empty strings — the rules were updated such that the delivery field
-should not appear at all in new products. Drive URLs are inline in files.)
+Fail conditions:
+- Field absent (would violate F1 spec contract)
+- Field present with non-empty values (real Drive URL = Drive on, which
+  no current product uses)
+- Field present but malformed (missing one of the two keys, wrong types)
 
-Wait — the user's check is specifically `Search for: delivery?: Must NOT be
-present.` That's the optional `delivery?:` field on ProductConfig. So the
-exact grep is:
-```bash
-grep -nE "delivery\?:|^  delivery:" cole/config/au-19-frcgw-clearance-certificate.ts
-```
-Pass: zero matches OR only inside files[] entries (the `driveUrl` field).
-Fail: a top-level `delivery: { ... }` object outside files[].
-
-If the F1 config has `delivery: { tier1DriveEnvVar: "", tier2DriveEnvVar: "" }`
-that is a transitional pattern. New rule: top-level delivery field should
-be absent entirely. If present with empty strings, flag as PASS-with-note
-(it's harmless but legacy).
+Companion check: confirm position. Per F1 spec, `delivery` must sit
+between `tier2Calendar` and `monitorUrls`. Drift in placement is harmless
+to runtime but flagged for F1 spec hygiene.
 
 ### CHECK 4 — All `driveUrl` values are empty strings
 ```bash
@@ -188,10 +184,18 @@ Fail: 404, 500, or any other non-200.
 This is the most critical check. It proves the env vars are live and the
 getPriceId block routes correctly.
 
+**API parameter name: `product_key` (snake_case).** The route at
+`app/api/create-checkout-session/route.ts` line 289 destructures
+`product_key`, NOT `productKey`. Using camelCase causes the API to fall
+through to the legacy default `supertax_${tier}_div296_wealth_eraser`
+and return a misleading "No Stripe price configured" error pointing at
+the wrong key. If the response surfaces a key that does NOT match the one
+sent, that is the camelCase confusion — fix the curl, not the env vars.
+
 ```bash
 curl -s -X POST "https://www.taxchecknow.com/api/create-checkout-session" \
   -H "Content-Type: application/json" \
-  -d '{"productKey":"au_67_frcgw_clearance_certificate","tier":67,"decision_session_id":"test-f6-gate","country":"AU","success_url":"https://www.taxchecknow.com/au/check/frcgw-clearance-certificate/success/assess","cancel_url":"https://www.taxchecknow.com/au/check/frcgw-clearance-certificate"}'
+  -d '{"product_key":"au_67_frcgw_clearance_certificate","tier":67,"decision_session_id":"test-f6-gate","country":"AU","success_url":"https://www.taxchecknow.com/au/check/frcgw-clearance-certificate/success/assess","cancel_url":"https://www.taxchecknow.com/au/check/frcgw-clearance-certificate"}'
 ```
 
 Expected: JSON containing `"url":"https://checkout.stripe.com/..."`.
@@ -200,7 +204,7 @@ Repeat for tier 147:
 ```bash
 curl -s -X POST "https://www.taxchecknow.com/api/create-checkout-session" \
   -H "Content-Type: application/json" \
-  -d '{"productKey":"au_147_frcgw_clearance_certificate","tier":147,"decision_session_id":"test-f6-gate","country":"AU","success_url":"https://www.taxchecknow.com/au/check/frcgw-clearance-certificate/success/plan","cancel_url":"https://www.taxchecknow.com/au/check/frcgw-clearance-certificate"}'
+  -d '{"product_key":"au_147_frcgw_clearance_certificate","tier":147,"decision_session_id":"test-f6-gate","country":"AU","success_url":"https://www.taxchecknow.com/au/check/frcgw-clearance-certificate/success/plan","cancel_url":"https://www.taxchecknow.com/au/check/frcgw-clearance-certificate"}'
 ```
 
 Pass: both return a Stripe checkout URL.
