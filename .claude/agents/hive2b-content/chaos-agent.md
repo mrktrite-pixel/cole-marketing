@@ -52,23 +52,43 @@ angles must NOT repeat what hook-matrix already said well.
 ## Output
 Two outputs, primary then fallback:
 
-**Primary:** 3 rows in Supabase `chaos_angles` table:
+**Primary:** 3 rows in Supabase `chaos_angles` table.
+
+The production schema is **minimal — 3 user fields only**:
 ```
 {
-  product_key: '[product-key]',
-  angle: '[angle text]',
-  platform: 'social',
-  supporting_evidence: '[where in F1 config / law this is grounded]',
-  risk_note: '[any defensibility risk — usually empty for clean angles]',
-  is_recommended: true,
-  created_at: NOW()
+  product_key: '[product-key]',     -- text
+  angle:       '[angle text]',      -- text
+  platform:    'social',            -- text
+  -- id: uuid (auto)
+  -- created_at: timestamptz (auto)
 }
 ```
 
-**Fallback (if Supabase unreachable):** Write to:
+Do NOT include `supporting_evidence`, `risk_note`, `is_recommended` —
+those columns do not exist in the production table; the INSERT will fail.
+Per-angle audit metadata (orthogonality reasoning, evidence anchor) lives
+in the fallback JSON only, not in Supabase.
+
+**Fallback (if Supabase unreachable OR JSON-only audit data needed):** Write to:
 ```
 cluster-worldwide/taxchecknow/video-inbox/chaos-angles-[product-key].json
 ```
+
+The JSON carries the richer schema (angle + supporting_evidence +
+orthogonality_reasoning + character_count). The Supabase row is the
+machine-readable hand-off; the JSON is the audit trail.
+
+**JSON validation step (mandatory after writing JSON):**
+```bash
+node -e "require('./cluster-worldwide/taxchecknow/video-inbox/chaos-angles-[product-key].json')"
+```
+Must parse clean. If it errors with "SyntaxError" or "Expected ','", do
+NOT declare done — read the file, find the malformed token (common: bare
+parentheses inside arrays, trailing commas, unquoted comments), fix with
+Edit tool, re-validate. Sonnet has been observed to write JSON-invalid
+audit metadata; this validation step catches it before downstream bees
+choke.
 
 Plus: one row in `agent_log`.
 
@@ -246,15 +266,27 @@ curl -s -X POST "$SUPA_URL/rest/v1/chaos_angles" \
   -H "Content-Type: application/json" \
   -H "Prefer: return=representation" \
   -d '[
-    {"product_key":"...","angle":"...","platform":"social","supporting_evidence":"...","risk_note":"","is_recommended":true},
-    ...
+    {"product_key":"...","angle":"...","platform":"social"},
+    {"product_key":"...","angle":"...","platform":"social"},
+    {"product_key":"...","angle":"...","platform":"social"}
   ]'
 ```
 
 Capture the response. Confirm 3 rows returned with IDs.
 
+The Supabase row is intentionally minimal (3 user fields). Audit metadata
+(supporting_evidence, orthogonality_reasoning, character_count) goes in
+the JSON fallback file only — it's the audit trail, not the runtime data.
+
 Fallback if Supabase write fails: Write tool to
 `cluster-worldwide/taxchecknow/video-inbox/chaos-angles-[product-key].json`.
+
+After writing the JSON file, ALWAYS validate:
+```bash
+node -e "require('/full/path/to/chaos-angles-[product-key].json')"
+```
+Must parse clean. If parse fails, fix with Edit tool, re-validate, then
+declare done. Never hand a broken JSON to downstream bees.
 
 ### Step 7 — Write to agent_log
 
