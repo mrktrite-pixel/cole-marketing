@@ -101,6 +101,29 @@ Capture the hash and report it.
 
 ---
 
+## Pre-flight — Build environment cleanup
+
+If `npm run build` fails with the message:
+```
+⨯ Another next build process is already running.
+```
+
+That's a stale `.next/lock` file from an earlier build process that didn't
+exit cleanly (common when multiple agents run builds in the same session).
+Removing it is **permitted** as environment cleanup — it's a 0-byte sentinel,
+not a source file:
+
+```bash
+rm -f .next/lock
+```
+
+Then retry `npm run build`. This is the ONE bash file deletion permitted to
+this bee. It is NOT covered by the "forbidden bash operations" rule because
+`.next/` is build cache, not source-controlled state.
+
+Do NOT use `rm` for any other file. If a different stale-state issue appears,
+escalate to operator — never invent new cleanup commands.
+
 ## The 6-Step Workflow
 
 ### Step 1 — Read the target files (no edits yet)
