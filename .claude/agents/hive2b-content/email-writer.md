@@ -436,6 +436,46 @@ Mismatch handling:
   `country` field, STOP — escalate to Tactical Queen. Do not guess.
 - If the prefix doesn't match any known niche, STOP and escalate.
 
+### Step 0c — Read product facts file (HARD GATE)
+
+Determine the facts file from the product's `product_key`:
+
+```
+au-*frcgw*       → knowledge/au-frcgw-facts.md
+au-*cgt-main*    → knowledge/au-cgt-main-residence-facts.md (when created)
+uk-*mtd*         → knowledge/uk-mtd-facts.md (when created)
+... pattern: knowledge/<country>-<topic>-facts.md ...
+```
+
+Read the file before writing any email subject or body. Extract the
+values needed: threshold amounts, legislation citations, fear numbers,
+deadlines, consequences, source URLs, exact rule names.
+
+**Use ONLY values shown WITHOUT a `[VERIFY: ...]` tag.** The facts file
+marks unverified values with `[VERIFY: ...]`; those values are NOT
+confirmed and must NOT be used as if they were.
+
+When a needed fact is missing from the file OR carries a `[VERIFY]`
+tag, write `[FACT NEEDED: <short description>]` in the email body
+where the value would have gone. Do not approximate. Do not pull from
+the F1 config as a substitute — the facts file is the dated single
+source of truth.
+
+If the facts file does not exist for the product, write all 7
+templates with `[FACT NEEDED]` placeholders for every numeric, date,
+legislative, or URL value, and log `missing_facts_file: knowledge/
+<file>.md` to agent_log.
+
+The G4 Content Manager hard-fails any email containing `[FACT NEEDED]`.
+Emails carry the highest misinformation risk — they're triggered
+automatically by the cron and land in inboxes without a second human
+review. The operator must populate / verify the facts file before
+templates can be inserted into `email_templates`.
+
+Log to `agent_log` after the run with the `result` field including
+`facts_file_used: "knowledge/<file>.md"` and `fact_needed_count: <N>`
+(across all 7 templates).
+
 ### Step 1 — Read inputs
 Read tool: VOICE.md, CHARACTERS.md, F1 config, hook_matrix top 3.
 Bash: probe `email_templates` schema:

@@ -243,6 +243,43 @@ Mismatch handling:
   `country` field, STOP — escalate to Tactical Queen. Do not guess.
 - If the prefix doesn't match any known niche, STOP and escalate.
 
+### Step 0c — Read product facts file (HARD GATE)
+
+Determine the facts file from the product's `product_key`:
+
+```
+au-*frcgw*       → knowledge/au-frcgw-facts.md
+au-*cgt-main*    → knowledge/au-cgt-main-residence-facts.md (when created)
+uk-*mtd*         → knowledge/uk-mtd-facts.md (when created)
+... pattern: knowledge/<country>-<topic>-facts.md ...
+```
+
+Read the file before auditing or rewriting any config copy. Extract the
+values needed: threshold amounts, legislation citations, fear numbers,
+deadlines, consequences, source URLs, exact rule names.
+
+**Use ONLY values shown WITHOUT a `[VERIFY: ...]` tag.** The facts file
+marks unverified values with `[VERIFY: ...]`; those values are NOT
+confirmed and must NOT be used as if they were.
+
+When a needed fact is missing from the file OR carries a `[VERIFY]`
+tag, write `[FACT NEEDED: <short description>]` in the rewritten config
+field where the value would have gone. Do not approximate. Do not
+preserve the existing config value as a fallback — the facts file is
+the dated single source of truth, and existing config copy may itself
+contain unverified facts that need flagging.
+
+If the facts file does not exist for the product, flag every numeric,
+date, legislative, or URL value with `[FACT NEEDED]` and log
+`missing_facts_file: knowledge/<file>.md` to agent_log.
+
+The G4 Content Manager hard-fails any output containing `[FACT NEEDED]`.
+The operator must populate / verify the facts file before the rewrite
+can be applied to the config.
+
+Log to `agent_log` after the run with the `result` field including
+`facts_file_used: "knowledge/<file>.md"` and `fact_needed_count: <N>`.
+
 ### Step 1 — Read knowledge files
 Read VOICE.md + CHARACTERS.md (Gary for AU).
 

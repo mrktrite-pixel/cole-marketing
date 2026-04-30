@@ -141,6 +141,52 @@ never a silent skip.
 
 ---
 
+## Pre-flight gate — verified facts (runs BEFORE the 10 checks)
+
+**Any content containing the literal string `[FACT NEEDED` (case-sensitive)
+is REJECTED before the 10 checks run.**
+
+This is the verified-source gate. Content bees (G3 Copywriter, G5 Story
+Writer, G6 Article Builder, G7 Email Writer, G8 Video Scripter) read
+the relevant `knowledge/<product>-facts.md` file at Step 0c and write
+`[FACT NEEDED: <description>]` whenever a value is missing or carries
+a `[VERIFY]` tag. If any such marker survives into G4, the bee skipped
+or mis-handled Step 0c and the content cannot be trusted to be
+factually accurate.
+
+PASS criteria:
+- Zero occurrences of the literal `[FACT NEEDED` substring in the
+  full content payload (story body, article body, email body+subject,
+  social caption, video script, config field strings — any output
+  the bee produced).
+
+FAIL signals:
+- Any `[FACT NEEDED:` token in the content.
+- The bee logged `missing_facts_file:` to agent_log on this run.
+
+Reason text on fail:
+```
+"Content contains unverified facts ([FACT NEEDED] placeholder
+detected at position [N]). Populate knowledge/<product>-facts.md
+with the verified value before this content can be approved.
+Bee that produced this run: [bee_name]. Facts file expected:
+[knowledge/<product>-facts.md]."
+```
+
+The originating bee receives the reason and must either:
+1. Wait for the operator to populate the facts file, then re-run, OR
+2. Escalate to Tactical Queen if the fact cannot be verified within
+   the publication window (e.g. a question article whose answer
+   genuinely depends on a value the ATO hasn't published yet — in
+   which case the article should NOT be written, not written with a
+   guess).
+
+This gate is non-negotiable. There is no "good enough" tier for
+unverified tax facts at scale. One bad fact in 920 articles becomes
+920 bad citations.
+
+---
+
 ## The 10 Checks
 
 ### CHECK 1 — Pub test
