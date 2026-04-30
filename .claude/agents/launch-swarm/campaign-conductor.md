@@ -78,7 +78,7 @@ fire on the scheduled `publish_time`.
 ### Rule 4 — Idempotency
 Re-running the conductor for the same product on the same `site` within
 14 days should NOT duplicate rows. Before INSERT, check for existing
-calendar rows for `(site, product_key, date, platform)` and skip if a
+calendar rows for `(site, product_key, scheduled_date, platform)` and skip if a
 matching row exists. Adaptive Queen may re-run me to refresh — duplicates
 break that.
 
@@ -125,11 +125,11 @@ SUPA_URL=$(grep "^NEXT_PUBLIC_SUPABASE_URL=" /c/Users/MATTV/CitationGap/cole-mar
 SUPA_KEY=$(grep "^SUPABASE_SERVICE_ROLE_KEY=" /c/Users/MATTV/CitationGap/cole-marketing/.env | cut -d= -f2)
 TODAY=$(date +%Y-%m-%d)
 END=$(date -d "+14 days" +%Y-%m-%d)
-curl -s "$SUPA_URL/rest/v1/campaign_calendar?site=eq.taxchecknow&date=gte.$TODAY&date=lte.$END&select=date,platform,product_key" \
+curl -s "$SUPA_URL/rest/v1/campaign_calendar?site=eq.taxchecknow&scheduled_date=gte.$TODAY&scheduled_date=lte.$END&select=scheduled_date,platform,product_key" \
   -H "apikey: $SUPA_KEY" -H "Authorization: Bearer $SUPA_KEY"
 ```
 
-Build a Set of `(date, platform, product_key)` keys. Before scheduling any
+Build a Set of `(scheduled_date, platform, product_key)` keys. Before scheduling any
 item, check the Set. If collision: push to next available day.
 
 ### RULE C — Email follows social by 24h
@@ -186,7 +186,7 @@ SITE="${SITE:-taxchecknow}"
 PRODUCT_KEY="${PRODUCT_KEY:-}"  # optional filter
 ```
 
-### Step 2 — Read approved content_jobs
+### Step 2 — Read approved content_jobs (with status fallback rule)
 
 ```bash
 SUPA_URL=$(grep "^NEXT_PUBLIC_SUPABASE_URL=" /c/Users/MATTV/CitationGap/cole-marketing/.env | cut -d= -f2)
@@ -200,8 +200,40 @@ curl -s "$SUPA_URL/rest/v1/content_jobs?$QS&select=id,job_type,product_key,count
   -H "apikey: $SUPA_KEY" -H "Authorization: Bearer $SUPA_KEY"
 ```
 
+#### Status fallback rule (added after AU-19 G5 incident)
+
+If `status=eq.approved` returns 0 rows for the product, fall back to
+`status=eq.pending_approval`:
+
+```bash
+QS_FALLBACK="site=eq.$SITE&status=eq.pending_approval&order=created_at.asc"
+[ -n "$PRODUCT_KEY" ] && QS_FALLBACK="$QS_FALLBACK&product_key=eq.$PRODUCT_KEY"
+curl -s "$SUPA_URL/rest/v1/content_jobs?$QS_FALLBACK&select=id,job_type,product_key,country,output_data,site" \
+  -H "apikey: $SUPA_KEY" -H "Authorization: Bearer $SUPA_KEY"
+```
+
+If the fallback returns rows:
+1. Log the deviation to agent_log:
+   ```js
+   {
+     bee_name: 'campaign-conductor',
+     action: 'conductor_status_fallback',
+     site: '[site]',
+     product_key: '[product_key]',
+     result: 'Used pending_approval — operator review required before publishing'
+   }
+   ```
+2. Continue planning, but mark every calendar row with
+   `status: 'draft_pending_approval'` (NOT `'scheduled'`). This prevents
+   publishers from picking the rows up before operator approval.
+3. The operator flips the calendar rows to `status: 'scheduled'` AND the
+   content_jobs row to `status: 'approved'` in Soverella, in one batch.
+
+If both queries return 0 rows → STOP, escalate to Tactical Queen
+("no schedulable content for product").
+
 For each job extract:
-- `id` (used as content_id in calendar rows)
+- `id` (used as `content_id` in calendar rows)
 - `job_type` (story_social_package | article | etc.)
 - `product_key`
 - `output_data.linkedin_post`, `.x_thread`, `.ig_caption`, `.email_section`,
@@ -236,27 +268,61 @@ For each scheduled day:
 
 ### Step 6 — Write campaign_calendar rows
 
+The production schema uses `scheduled_date` (NOT `date`). After the
+2026-04-30 ALTER migration, the table also carries `content_id`,
+`publish_time`, `dependency_content_id`, `notes`, and `created_by`.
+
 For each scheduled item, INSERT via `node -e` fetch (em-dash safe):
 
 ```js
 const payload = {
   site: '[site]',
-  date: '[YYYY-MM-DD]',
+  scheduled_date: '[YYYY-MM-DD]',  // production column name
   platform: '[x|linkedin|email|instagram|reddit|question|tiktok|youtube]',
-  content_id: '[content_jobs.id]',
+  content_id: '[content_jobs.id]',  // optional after migration; null OK
   content_type: '[thread|post|carousel|nurture|question|comment|reel|video]',
   product_key: '[product_key]',
-  status: 'scheduled',
-  publish_time: '[HH:MM AEST per platform default]',
-  dependency_content_id: '[id of dep, or null]',
-  notes: '[short human-readable note]',
-  created_by: 'campaign-conductor'
+  status: 'scheduled',  // OR 'draft_pending_approval' per Step 2 fallback
+  publish_time: '[HH:MM:SS]',  // optional after migration; default '09:00:00'
+  dependency_content_id: '[id of dep, or null]',  // optional
+  notes: '[short human-readable note]',  // optional
+  created_by: 'campaign-conductor'  // optional, default 'campaign-conductor'
 };
 ```
 
+#### Schema probe before INSERT (carries from G7/H2 pattern)
+
+Before the first INSERT in a run, probe whether the post-migration
+columns exist:
+```bash
+curl -s "$SUPA_URL/rest/v1/campaign_calendar?select=content_id,publish_time,notes&limit=1" \
+  -H "apikey: $SUPA_KEY" -H "Authorization: Bearer $SUPA_KEY" -i | head -3
+```
+
+- HTTP 200 → migration ran, INSERT with full payload
+- HTTP 400 + `42703` → migration not run yet, INSERT with minimal payload:
+  `{ site, scheduled_date, platform, content_type, product_key, status }`
+  Then output the canonical ALTER SQL for operator and log the partial
+  insert in agent_log.
+
 Idempotency: BEFORE INSERT, query
-`?site=eq.[site]&product_key=eq.[product_key]&date=eq.[date]&platform=eq.[platform]`
+`?site=eq.[site]&product_key=eq.[product_key]&scheduled_date=eq.[date]&platform=eq.[platform]`
 — if a row exists, skip the INSERT.
+
+#### Canonical ALTER SQL (output for operator if Step 6 probe fails)
+
+```sql
+ALTER TABLE public.campaign_calendar
+  ADD COLUMN IF NOT EXISTS content_id UUID;
+ALTER TABLE public.campaign_calendar
+  ADD COLUMN IF NOT EXISTS publish_time TIME DEFAULT '09:00:00';
+ALTER TABLE public.campaign_calendar
+  ADD COLUMN IF NOT EXISTS dependency_content_id UUID;
+ALTER TABLE public.campaign_calendar
+  ADD COLUMN IF NOT EXISTS notes TEXT;
+ALTER TABLE public.campaign_calendar
+  ADD COLUMN IF NOT EXISTS created_by TEXT DEFAULT 'campaign-conductor';
+```
 
 ### Step 7 — Generate Soverella summary in agent_log
 
