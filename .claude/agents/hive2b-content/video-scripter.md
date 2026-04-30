@@ -264,45 +264,25 @@ Mismatch handling:
   `country` field, STOP — escalate to Tactical Queen. Do not guess.
 - If the prefix doesn't match any known niche, STOP and escalate.
 
-### Step 0c — Read product facts file (HARD GATE)
+### Step 0c — Read product facts file
 
-Determine the facts file from the product's `product_key`:
+Determine facts file from `product_key`:
+- `au-*frcgw*` → `knowledge/au-frcgw-facts.md`
+- (other products: check `knowledge/` directory for matching file)
 
-```
-au-*frcgw*       → knowledge/au-frcgw-facts.md
-au-*cgt-main*    → knowledge/au-cgt-main-residence-facts.md (when created)
-uk-*mtd*         → knowledge/uk-mtd-facts.md (when created)
-... pattern: knowledge/<country>-<topic>-facts.md ...
-```
+If file exists:
+- Read it fully.
+- Extract: threshold, rate, legislation reference, fear number, deadline, consequence, GOAT scope statement.
+- Use ONLY these facts in content.
+- Never approximate or guess a number.
 
-Read the file before writing either the SHORT or AUTHORITY script.
-Extract the values needed: threshold amounts, legislation citations,
-fear numbers, deadlines, consequences, source URLs, exact rule names.
+If file missing:
+- Log to `agent_log`: `"No facts file for [product_key]. Content will contain [FACT NEEDED] placeholders."`
+- Continue — G4 gate will catch them.
 
-**Use ONLY values shown WITHOUT a `[VERIFY: ...]` tag.** The facts file
-marks unverified values with `[VERIFY: ...]`; those values are NOT
-confirmed and must NOT be used as if they were.
-
-When a needed fact is missing from the file OR carries a `[VERIFY]`
-tag, write `[FACT NEEDED: <short description>]` in the script where
-the value would have gone. Do not approximate. Do not pull from the
-F1 config as a substitute — the facts file is the dated single source
-of truth.
-
-If the facts file does not exist for the product, write both scripts
-with `[FACT NEEDED]` placeholders for every numeric, date, legislative,
-or URL value, and log `missing_facts_file: knowledge/<file>.md` to
-agent_log.
-
-The G4 Content Manager hard-fails any script containing `[FACT NEEDED]`.
-Video carries reputational weight — once published to YouTube /
-TikTok / Reels, removing it is harder than text. The operator must
-populate / verify the facts file before scripts can be queued for
-production.
-
-Log to `agent_log` after the run with the `result` field including
-`facts_file_used: "knowledge/<file>.md"` and `fact_needed_count: <N>`
-(across both SHORT and AUTHORITY scripts).
+If a required fact is not in the file:
+- Write placeholder: `[FACT NEEDED: describe]`
+- Do not invent or approximate.
 
 ### Step 1 — Load inputs (Supabase + files)
 
