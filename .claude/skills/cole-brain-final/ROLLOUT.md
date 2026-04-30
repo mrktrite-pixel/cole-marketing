@@ -858,12 +858,30 @@ K11. Soverella Content Queue UI
      already correct — this UI is just a wrapper around it. No bee
      spec changes when K11 ships.
 
-     (K10 reserved — slot intentionally left for future Hive 3
-     worker if Adaptive Queen surfaces a need before K11 ships.)
+K10. Site Health Bee (weekly)
+     Token: Haiku
+     What: 404 monitor + core page health + broken internal links.
+     Reads `site_health` Supabase table populated by:
+     - taxchecknow `app/not-found.tsx` (page_not_found dataLayer
+       events relayed to Supabase via a small ingestor — populates
+       check_type='404', url_broken, referrer)
+     - K1-K8 weekly crawl pass over the published sitemap (records
+       check_type='broken_link' or 'core_page_health' with
+       http_status, url_expected, suggested_fix)
+     Aggregates by url_broken (increments hit_count for repeats),
+     scores priority (RED if hit_count over 10/week or core page
+     500-class, AMBER if hit_count 3-10, GREEN/auto-resolve if 1-2).
+     Reports weekly to Soverella with traffic-light view and the
+     suggested_fix column populated for the top 5 broken URLs.
+     Sign off K10: Weekly site health report visible in Soverella ✅
+
+     (K11 numbering preserved for the Content Queue UI above —
+     K10 was previously reserved and is now allocated to Site Health.)
 
 SIGN OFF K:
   □ All 8 original Hive 3 workers + manager fully built
   □ K9 Review Monitor Bee operational (after SESSION-11-STATE.md spec lands)
+  □ K10 Site Health Bee operational (weekly RED/AMBER/GREEN to Soverella)
   □ K11 Soverella Content Queue UI live (post-K9)
   □ Optimise Manager quality gate active
   □ PERFORMANCE.md auto-updating every Monday
