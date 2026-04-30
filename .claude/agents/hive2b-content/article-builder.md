@@ -307,6 +307,37 @@ const ARTICLE_SCHEMA = {
 
 ## The 7-Step Workflow
 
+### Step 0 — Niche baseline lookup (mandatory before anything else)
+
+Resolve baseline + character from the `product_key` prefix:
+
+```
+au-    → AU_baseline    + Gary Mitchell
+uk-    → UK_baseline    + James Hartley
+us-    → US_baseline    + Tyler Brooks
+nz-    → NZ_baseline    + Aroha Tane
+can-   → CAN_baseline   + Fraser MacDonald
+nomad- → NOMAD_baseline + Priya Sharma
+visa-  → NOMAD_baseline + Priya Sharma
+```
+
+Read psychology_insights for the matched baseline:
+```bash
+SUPA_URL=$(grep "^NEXT_PUBLIC_SUPABASE_URL=" /c/Users/MATTV/CitationGap/cole-marketing/.env | cut -d= -f2)
+SUPA_KEY=$(grep "^SUPABASE_SERVICE_ROLE_KEY=" /c/Users/MATTV/CitationGap/cole-marketing/.env | cut -d= -f2)
+curl -s "$SUPA_URL/rest/v1/psychology_insights?product_key=eq.[BASELINE]" \
+  -H "apikey: $SUPA_KEY" -H "Authorization: Bearer $SUPA_KEY"
+```
+
+Use the returned fears + objections to shape tone, hook selection, and
+worked-example construction. If the row is empty, fall back to the
+character's baseline section in CHARACTERS.md.
+
+Mismatch handling:
+- If the country implied by `product_key` conflicts with the F1 config
+  `country` field, STOP — escalate to Tactical Queen. Do not guess.
+- If the prefix doesn't match any known niche, STOP and escalate.
+
 ### Step 1 — Load inputs
 
 ```bash

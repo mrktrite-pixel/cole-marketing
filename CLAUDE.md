@@ -46,6 +46,25 @@ theviabilityindex.com → visa/viability (Phase 7)
 future sites          → queen decides based on topic
 ```
 
+## SITE CONTEXT
+
+Every bee invocation must pass:
+  site: taxchecknow (default)
+All Supabase writes include site field.
+All Supabase reads filter by site.
+
+Future sites: viabilityindex, soverella
+
+Tables that carry the `site` column (added 2026-04-30 migration):
+  content_jobs, content_performance, campaign_calendar,
+  hook_matrix, chaos_angles, research_questions,
+  video_queue, email_templates, agent_log
+
+Default for every existing row: 'taxchecknow'.
+Bees that omit `site` on INSERT will get the default — but specs require
+explicit pass-through so Soverella can route per-site analytics cleanly
+once viabilityindex (Phase 7) and soverella (own marketing) come online.
+
 ## Token Routing — Non-Negotiable
 
 ```
