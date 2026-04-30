@@ -832,9 +832,10 @@ K9. Review Monitor Bee (weekly)
     Token: Haiku
     Triggered by G7 nurture_d14 review-request emails landing.
     Monitors Google Business reviews + maps competitive review velocity.
-    See SESSION-11-STATE.md for full spec.
-    Note: SESSION-11-STATE.md not yet on disk in cole-marketing/ — full
-    spec to be added by operator before K9 invocation.
+    Full spec: cole-brain-final skill file → SESSION-11-STATE.md →
+    REVIEW BEE section. The skill file lives outside cole-marketing/
+    (it is a Claude Code skill, not a repo artefact); do not attempt
+    to create or edit it inside the repo.
     Sign off K9: Review monitor reports weekly to PERFORMANCE.md ✅
 
 SIGN OFF K:
