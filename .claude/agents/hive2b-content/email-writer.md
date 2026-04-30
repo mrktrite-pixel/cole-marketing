@@ -293,6 +293,30 @@ The bee includes this SQL in the agent_log result and falls to Tier 2 in
 the meantime. Operator runs the SQL, then on next product run the bee
 will land in Tier 1 directly.
 
+**Step 1b.i — Reusable migration pattern (added after AU-19 G7 incident):**
+
+After G7 produces a `cole-marketing/video-inbox/email-templates-[product].json`
+file, the canonical migrator path is:
+
+1. **If `email_templates` table does not exist** — run the SQL block above
+   (Step 1b) in the Supabase SQL editor.
+2. **Then run** `scripts/migrate-email-templates-[product].ts` from the
+   taxchecknow repo. The script:
+   - Loads `.env.local` for Supabase credentials
+   - Probes the table to confirm it exists (clear error if missing)
+   - Upserts every row from the JSON with
+     `onConflict: "product_key,email_type"` so re-runs are idempotent
+   - Reports final row counts split by tier-67 / tier-147 product keys
+
+**Pattern for new products:** copy
+`scripts/migrate-email-templates-au19.ts` (taxchecknow repo) →
+swap the `JSON_PATH` constant + the verification `product_key` filters →
+commit alongside the G7 JSON file. Each migrator is a one-shot per
+product, kept in `scripts/` so re-runs after schema changes are trivial.
+
+The original AU-19 migrator is the reference implementation (committed
+`6ce3939`).
+
 **Step 1c — INSERT (only if Step 1a returned 200):**
 ```bash
 curl -s -X POST "$SUPA_URL/rest/v1/email_templates" \
