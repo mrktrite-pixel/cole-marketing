@@ -838,9 +838,33 @@ K9. Review Monitor Bee (weekly)
     to create or edit it inside the repo.
     Sign off K9: Review monitor reports weekly to PERFORMANCE.md ✅
 
+K11. Soverella Content Queue UI
+     What: UI for reviewing and approving content_jobs rows before
+     publishing.
+
+     Displays:
+     - pending_approval content_jobs rows
+     - Social package preview per platform
+     - Approve button → PATCH status=approved
+     - Reject button → PATCH status=rejected with rejection_reason
+       field
+     - 14-day calendar view from campaign_calendar
+
+     Currently: operator approves via direct Supabase PATCH
+     (documented in CLAUDE.md OPERATOR APPROVAL PATTERN section).
+     Future: operator approves via this UI.
+
+     Build after K1-K9 bees are operational. The PATCH pattern is
+     already correct — this UI is just a wrapper around it. No bee
+     spec changes when K11 ships.
+
+     (K10 reserved — slot intentionally left for future Hive 3
+     worker if Adaptive Queen surfaces a need before K11 ships.)
+
 SIGN OFF K:
   □ All 8 original Hive 3 workers + manager fully built
   □ K9 Review Monitor Bee operational (after SESSION-11-STATE.md spec lands)
+  □ K11 Soverella Content Queue UI live (post-K9)
   □ Optimise Manager quality gate active
   □ PERFORMANCE.md auto-updating every Monday
   □ Soverella analytics tab showing weekly reports
