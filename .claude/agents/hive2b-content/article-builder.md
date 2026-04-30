@@ -103,13 +103,32 @@ Don't strip question marks.
 Why: AEO engines match query → exact-text H1 with much higher confidence
 than paraphrased H1. The verbatim H1 is the citation hook.
 
-### Rule 3 — 50-word direct answer in paragraph 1
+### Rule 3 — 50-word direct answer in paragraph 1 (HARD GATE)
 The first paragraph is what AI extracts and quotes. Constraints:
 - Open with `Yes`, `No`, or a direct fact statement
-- ≤50 words total
+- **≤50 words total — HARD GATE, not a guideline**
 - Specific number / date / statute included
 - No "it depends" — if the answer truly depends, lead with the most
   common case and qualify in paragraph 2
+
+#### Mandatory word-count check before declaring done
+
+After generating the SHORT_ANSWER text, run:
+```bash
+echo "[SHORT_ANSWER text]" | wc -w
+```
+
+- If result ≤ 50 → proceed
+- If result > 50 → trim the last sentence (keep the dollar fact + the
+  Yes/No opener), recount, repeat until ≤50
+
+Sonnet has been observed to write 53–60 word "concise" answers when asked
+for ≤50 (incident 2026-04-30, AU-19 G6 batch — 5 articles all shipped at
+54 words). The wc -w check catches this drift before the article ships.
+
+Do NOT skip the word-count check. Do NOT round up ("close enough at 53").
+The 50-word cap is an AEO-extraction tightness contract — engines truncate
+at 50, and a 54-word answer gets cut mid-clause.
 
 This paragraph also goes into the FAQ_SCHEMA `acceptedAnswer.text` field.
 
@@ -333,9 +352,15 @@ For each question in the batch:
 
 If any FAIL → Edit the offending section → re-audit. Up to 3 iterations.
 
-### Step 4 — Fire Distribution Bee per article
+### Step 4 — Fire Distribution Bee per article (BOTH ATTEMPTS REQUIRED)
 
-Try cross-repo call first:
+The cascade is **Attempt 1 → Attempt 2 → log specific failure**. Both
+attempts must be made. Skipping both silently is forbidden — that
+deferral pattern was caught in the AU-19 G6 run where the agent skipped
+both paths "for speed" and 5 articles went unindexed.
+
+#### Attempt 1 — cross-repo call to lib/distribution-bee.ts
+
 ```bash
 cd cluster-worldwide/taxchecknow
 npx ts-node --project cole/tsconfig.json -e "
@@ -346,33 +371,61 @@ import('./lib/distribution-bee').then(m => m.notifyNewPage({
   productKey: '[product-key]',
   country: '[COUNTRY]',
   description: '[question-text]'
-}))"
+}))" 2>&1
 ```
 
-Fallback if cross-repo fails — direct REST calls:
+Capture exit code + any error output. If exit 0 and no error → SUCCESS,
+move to next article. If exit non-zero or error printed → proceed to
+Attempt 2.
 
-1. **IndexNow ping:**
+#### Attempt 2 — direct curl REST POSTs (mandatory if Attempt 1 fails)
+
+Both REST calls must be attempted, in this order:
+
+**2a. IndexNow ping:**
 ```bash
 curl -s -X POST "https://api.indexnow.org/indexnow" \
   -H "Content-Type: application/json" \
+  -w "\nHTTP %{http_code}\n" \
   -d '{
     "host": "www.taxchecknow.com",
-    "key": "[INDEXNOW_KEY from env]",
+    "key": "[INDEXNOW_KEY from taxchecknow .env.local]",
     "urlList": ["https://www.taxchecknow.com/questions/[slug]"]
   }'
 ```
 
-2. **content_performance log via Supabase:**
+Capture HTTP code. Expected: 200 (ping accepted) or 202 (ping queued).
+
+**2b. content_performance log via Supabase:**
 ```bash
 curl -s -X POST "$SUPA_URL/rest/v1/content_performance" \
   -H "apikey: $SUPA_KEY" -H "Authorization: Bearer $SUPA_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"url":"...","page_type":"question","slug":"[slug]","product_key":"[product-key]","country":"[COUNTRY]","description":"[question]","indexnow_pinged":true}'
+  -H "Prefer: return=representation" \
+  -d '{"url":"https://www.taxchecknow.com/questions/[slug]","page_type":"question","slug":"[slug]","product_key":"[product-key]","country":"[COUNTRY]","description":"[question]","indexnow_pinged":true}'
 ```
 
-If both paths fail → log to agent_log with `result: "Distribution Bee
-deferred — cross-repo + REST both failed"` and continue. Do not block
-article publication on indexing.
+Capture returned id.
+
+#### If BOTH attempts fail (rare)
+
+Only THEN log a deferred status to agent_log with **the specific error
+message from each attempt**:
+```json
+{
+  "bee_name": "article-builder",
+  "action": "distribution_deferred",
+  "product_key": "[product-key]",
+  "result": "Distribution Bee deferred for [slug]. Attempt 1 (cross-repo): [error]. Attempt 2a (IndexNow): [HTTP code or error]. Attempt 2b (content_performance): [error]."
+}
+```
+
+Article publication is not blocked by indexing failure. But the agent_log
+row MUST contain the specific errors so adaptive-queen can detect
+infrastructure rot.
+
+**Forbidden:** "deferred for speed", "skipped for batch performance", or
+any deferral that doesn't include both attempts' actual error output.
 
 ### Step 5 — Update research_questions
 
