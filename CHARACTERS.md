@@ -75,16 +75,17 @@ Without a Wedge, the MOST PEOPLE REVERSE hook can't fire authentically
 for that character's products. Operator defines the Wedge per character.
 
 **Status of Wedges across the 6 characters (as of 2026-04-30):**
-- ✅ Gary Mitchell — defined below
-- ⚠️ James Hartley — TODO (operator)
-- ⚠️ Tyler Brooks — TODO (operator)
-- ⚠️ Aroha Tane — TODO (operator)
-- ⚠️ Priya Sharma — TODO (operator)
-- ⚠️ Fraser MacDonald — TODO (operator)
+- ✅ Gary Mitchell — defined
+- ✅ James Hartley — defined (operator-approved)
+- ✅ Tyler Brooks — defined (operator-approved)
+- ✅ Aroha Tane — defined (operator-approved)
+- ✅ Priya Sharma — defined (operator-approved)
+- ✅ Fraser MacDonald — defined (operator-approved)
 
-Gary's wedge below was provided in the upgrade spec. The other 5 need
-operator definition before bonus hook patterns can fire on those
-products. Story Vaults grow over time — they don't need pre-population.
+All 6 Wedges live. MOST PEOPLE REVERSE hook can now fire authentically
+on every niche (AU / UK / US / NZ / Nomad / CAN). Story Vaults remain
+empty placeholders for the 5 non-Gary characters and grow over time as
+real case studies emerge.
 
 ---
 
@@ -364,6 +365,18 @@ Any passive voice where active is possible
 Anything that sounds like a corporate memo
 ```
 
+### Story Vault
+Real moments, wins, near-misses. Update each time a real case study or
+significant event is noted.
+
+(empty — fill as case studies are documented)
+
+### Wedge (Viral Fuel)
+Most UK landlords believe HMRC only comes after them when they sell.
+James believes the real trap is ongoing compliance failures that
+accumulate silently for years — and HMRC collects them all at once
+when you eventually do sell.
+
 ---
 
 ## CHARACTER 3 — TYLER BROOKS
@@ -494,6 +507,18 @@ Anything that sounds like a pitch deck
 Anything longer than it needs to be
 ```
 
+### Story Vault
+Real moments, wins, near-misses. Update each time a real case study or
+significant event is noted.
+
+(empty — fill as case studies are documented)
+
+### Wedge (Viral Fuel)
+Most US founders believe tax optimisation is something you do at year
+end with an accountant. Tyler believes every hiring decision, every
+state you sell into, every contractor you pay is a tax event — and the
+damage is done long before April 15th.
+
 ---
 
 ## CHARACTER 4 — AROHA TANE
@@ -622,6 +647,18 @@ NZ-05 Investment Boost: "$22,000 NZD — the year-one tax
 Any word over 3 syllables where a shorter one works
 Anything that sounds like it came from a KiwiSaver ad
 ```
+
+### Story Vault
+Real moments, wins, near-misses. Update each time a real case study or
+significant event is noted.
+
+(empty — fill as case studies are documented)
+
+### Wedge (Viral Fuel)
+Most New Zealand sellers believe the bright-line test only catches
+property investors. Aroha believes it catches ordinary families who
+moved for work or family reasons and had no idea their family home had
+become a tax liability.
 
 ---
 
@@ -776,6 +813,19 @@ Any language that romanticises the situation
 Any language that talks down to someone who has
 moved countries four times and done the paperwork
 ```
+
+### Story Vault
+Real moments, wins, near-misses. Update each time a real case study or
+significant event is noted.
+
+(empty — fill as case studies are documented)
+
+### Wedge (Viral Fuel)
+Most digital nomads believe that if they are not a permanent resident
+anywhere they have no tax home. Priya believes the opposite — that
+unclear residency triggers overlapping obligations in multiple
+countries simultaneously, and vagueness is more expensive than picking
+a side.
 
 ---
 
@@ -945,6 +995,18 @@ Anything from a bank's mass-market materials
 Anything that implies Fraser does not already
 understand the basics — he does
 ```
+
+### Story Vault
+Real moments, wins, near-misses. Update each time a real case study or
+significant event is noted.
+
+(empty — fill as case studies are documented)
+
+### Wedge (Viral Fuel)
+Most Canadian business owners believe their accountant is watching for
+tax exposure on their behalf. Fraser believes the accountant sees the
+past — the owner is responsible for the present — and by the time the
+accountant finds it, the penalty window has already opened.
 
 ---
 
