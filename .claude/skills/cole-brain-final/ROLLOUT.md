@@ -966,6 +966,38 @@ SIGN OFF EACH STATION L-O:
 *Run alongside Stations J-O. Not sequential.*
 *920 question articles. The content spider web.*
 
+### PRE-STATION P REQUIREMENT — product catalog refactor
+
+**Before starting the 920 article factory: refactor `app/llms.txt/route.ts`
+and `app/sitemap.ts` to read from a single source of truth at
+`lib/product-catalog.ts`. This prevents missing products from either file.**
+
+Why this matters:
+- Both routes currently have **hardcoded product catalogs**.
+- Every new product requires edits to **two files**.
+- Risk: a product gets added to one file but not the other.
+- **AU-19 already showed this**: only the gate page slug appeared in a
+  grep for `frcgw` because the 5 G6 question slugs don't all contain
+  the literal `frcgw` substring; one was missed in spot-checks.
+- At Station P scale (920 articles + 46 products + stories +
+  questions), manual two-file maintenance breaks every week.
+
+Refactor shape:
+```ts
+// lib/product-catalog.ts — single source of truth
+export const PRODUCTS: CatalogItem[] = [...];      // 46+
+export const STORIES:   StoryItem[]   = [...];
+export const QUESTIONS: QuestionItem[] = [...];   // grows to ~920 at P1
+```
+
+Both `app/llms.txt/route.ts` and `app/sitemap.ts` import from this
+module. New product → one edit. New question → one edit. Audits
+become greppable across a single file.
+
+Owner: Tactical Queen. Block Station P kickoff until merged.
+
+---
+
 ```
 P1. Market Researcher runs on all 46 products
     20 questions per product = 920 total
