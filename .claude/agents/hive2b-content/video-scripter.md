@@ -115,12 +115,43 @@ new open loop:
 
 Open loops keep viewers watching past the 50% drop-off point.
 
-### Rule 7 — Title variants must trigger fear OR curiosity
+### Rule 7 — Title variants must trigger fear OR curiosity (HARD GATE on length)
 3 title variants per video. Each must:
-- Be ≤ 60 chars (YouTube truncation)
+- Be ≤ 60 chars (YouTube truncation) — **HARD GATE, not a guideline**
 - Contain a number (year, dollar amount, or count) OR a question
 - Avoid clickbait that promises something the video doesn't deliver
 - Forbidden: "You won't believe...", "SHOCKING", "This one trick"
+
+#### Mandatory length check before storing title_variants
+
+After generating 3 title variants, verify each:
+```bash
+node -e "
+const titles = [
+  '[variant 1]',
+  '[variant 2]',
+  '[variant 3]'
+];
+titles.forEach((t, i) => {
+  const ok = t.length <= 60;
+  console.log((i+1)+'. ['+t.length+' chars '+(ok ? 'PASS' : 'FAIL by ' + (t.length-60))+']', t);
+});
+"
+```
+
+All 3 must print PASS. If any FAIL → trim that variant (remove qualifiers,
+keep number + topic + year) → recount. Repeat until all 3 ≤60.
+
+This rule was added after the AU-19 G8 run shipped variants of 72 and
+76 chars — YouTube would have truncated them mid-clause in search results,
+e.g. "Your Solicitor Must Withhold $135,000 — Unless You Have…" with
+"This Certificate" cut off. Same drift pattern as G6's word-count cap;
+same hard-gate response.
+
+Sonnet has a tendency to write "complete sentences as titles" — those
+typically run 70-80 chars. Force trim toward 50-58 chars to leave a
+safety margin for YouTube's variable truncation cap (the actual cut-off
+varies by device).
 
 ### Rule 8 — Calculator URL in description LINE 1
 Description above-fold (first 3 lines, ~150 chars before "...show more"):
