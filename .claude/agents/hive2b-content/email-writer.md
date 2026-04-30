@@ -196,6 +196,29 @@ Forbidden subject lines:
 - Single link to the related calculator with `utm_source=email_nurture_d7`
 - Word cap: 100
 
+#### MANDATORY URL validation (added after AU-19 G7 incident)
+Before storing the nurture_d7 template, verify the cross-link URL returns
+HTTP 200 against the LIVE production site:
+```bash
+curl -s -o /dev/null -w "%{http_code}" "[full URL with UTM]"
+```
+- Expected: 200
+- If 404 → the slug is wrong. Common causes: missing `-trap` suffix
+  (e.g. wrote `cgt-main-residence` instead of `cgt-main-residence-trap`),
+  abbreviated slug (e.g. `frcgw` instead of `frcgw-clearance-certificate`),
+  or referenced a product that doesn't exist yet.
+- Fix: list `app/[country]/check/` directory, pick the closest live
+  product folder name, regenerate the link. Re-validate.
+
+This rule was added after the AU-19 G7 run shipped a nurture_d7 with
+`/au/check/cgt-main-residence` (404) instead of `/au/check/cgt-main-residence-trap`
+(200). Email cron would have fired a broken link to every paying customer.
+
+The URL validation also applies to T2/T3/nurture_d3/reminder_d30/law_change
+links — but those all point to the product's own gate page (a known-good
+URL from F1 config), so the failure mode is mostly nurture_d7 (cross-link)
+and any future law_change second link.
+
 ### TYPE 5 — reminder_d30 (30 days after purchase)
 - Subject: are they sorted? ("Settlement coming up?" / "Certificate sorted?")
 - Body: quick check-in, reminder of what they purchased, encouragement
@@ -223,11 +246,55 @@ The user's spec mandates `email_templates`. Production schema may have
 that table OR the alternative `email_sequences` (Supabase introspection
 suggested). Try in this order:
 
-### Tier 1 — POST to `email_templates`
+### Tier 1 — `email_templates` (with table-creation check)
+
+**Step 1a — Probe table existence first:**
 ```bash
 SUPA_URL=$(grep "^NEXT_PUBLIC_SUPABASE_URL=" /c/Users/MATTV/CitationGap/cole-marketing/.env | cut -d= -f2)
 SUPA_KEY=$(grep "^SUPABASE_SERVICE_ROLE_KEY=" /c/Users/MATTV/CitationGap/cole-marketing/.env | cut -d= -f2)
 
+curl -s "$SUPA_URL/rest/v1/email_templates?limit=0" \
+  -H "apikey: $SUPA_KEY" -H "Authorization: Bearer $SUPA_KEY" -i | head -5
+```
+
+If response is `HTTP/1.1 200 OK` → table exists → proceed to INSERT.
+If response contains `"code":"PGRST205"` → table missing → see Step 1b.
+
+**Step 1b — Table creation (only if Tier 1 missing AND operator authorises):**
+
+If the operator wants Tier 1 to be the canonical home, the table must be
+created via Supabase SQL. The bee CANNOT execute DDL directly via REST —
+this requires operator action through the Supabase SQL editor. The bee
+outputs the canonical SQL block for the operator to run:
+
+```sql
+CREATE TABLE IF NOT EXISTS public.email_templates (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  product_key TEXT NOT NULL,
+  email_type TEXT NOT NULL,
+  subject TEXT NOT NULL,
+  body TEXT NOT NULL,
+  market TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS email_templates_product_type_uniq
+  ON public.email_templates(product_key, email_type);
+
+ALTER TABLE public.email_templates ENABLE ROW LEVEL SECURITY;
+
+-- service_role bypass (read + write for the bee)
+CREATE POLICY "service_role_all" ON public.email_templates
+  FOR ALL TO service_role USING (true) WITH CHECK (true);
+```
+
+The bee includes this SQL in the agent_log result and falls to Tier 2 in
+the meantime. Operator runs the SQL, then on next product run the bee
+will land in Tier 1 directly.
+
+**Step 1c — INSERT (only if Step 1a returned 200):**
+```bash
 curl -s -X POST "$SUPA_URL/rest/v1/email_templates" \
   -H "apikey: $SUPA_KEY" -H "Authorization: Bearer $SUPA_KEY" \
   -H "Content-Type: application/json" \
@@ -238,8 +305,8 @@ curl -s -X POST "$SUPA_URL/rest/v1/email_templates" \
   ]'
 ```
 
-If response includes `"code":"PGRST205"` ("Could not find the table") →
-table doesn't exist → fall to Tier 2.
+Capture returned ids. If insert fails after 200-probe, treat as Tier 1
+broken and fall to Tier 2.
 
 ### Tier 2 — POST to `email_sequences`
 Same payload structure. If schema mismatch (some columns rejected), strip
