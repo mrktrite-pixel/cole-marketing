@@ -177,13 +177,13 @@ Must be 200.
 
 **C2 — llms.txt includes this product**
 ```bash
-curl -s "https://www.taxchecknow.com/llms.txt" | grep -c "[product-slug]"
+curl -s "https://www.taxchecknow.com/llms.txt?_t=$(date +%s)" -H "Cache-Control: no-cache" | grep -c "[product-slug]"
 ```
 Must return ≥ 1 occurrence.
 
 **C3 — sitemap.xml includes this product**
 ```bash
-curl -s "https://www.taxchecknow.com/sitemap.xml" | grep -c "/check/[product-slug]"
+curl -s "https://www.taxchecknow.com/sitemap.xml?_t=$(date +%s)" -H "Cache-Control: no-cache" | grep -c "/check/[product-slug]"
 ```
 Must return ≥ 1 occurrence.
 
