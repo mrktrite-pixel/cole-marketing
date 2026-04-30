@@ -823,13 +823,23 @@ K7. Chatbot Updater
     Token: Haiku | Runs: After every new product
     Sign off K7: Chatbot routes correctly to new product ✅
 
-K8. Optimise Manager (installs LAST)
+K8. Optimise Manager (installs LAST among original Hive 3)
     Token: Haiku
     Checks all Hive 3 outputs before they reach Queens
     Sign off K8: Manager correctly approves/rejects ✅
 
+K9. Review Monitor Bee (weekly)
+    Token: Haiku
+    Triggered by G7 nurture_d14 review-request emails landing.
+    Monitors Google Business reviews + maps competitive review velocity.
+    See SESSION-11-STATE.md for full spec.
+    Note: SESSION-11-STATE.md not yet on disk in cole-marketing/ — full
+    spec to be added by operator before K9 invocation.
+    Sign off K9: Review monitor reports weekly to PERFORMANCE.md ✅
+
 SIGN OFF K:
-  □ All 8 Hive 3 workers + manager fully built
+  □ All 8 original Hive 3 workers + manager fully built
+  □ K9 Review Monitor Bee operational (after SESSION-11-STATE.md spec lands)
   □ Optimise Manager quality gate active
   □ PERFORMANCE.md auto-updating every Monday
   □ Soverella analytics tab showing weekly reports
