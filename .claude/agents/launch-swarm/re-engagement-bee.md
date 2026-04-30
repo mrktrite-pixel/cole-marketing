@@ -121,17 +121,29 @@ NOW=$(date -u +%Y-%m-%dT%H:%M:%S)
 DAY_AGO=$(date -u -d "-24 hours" +%Y-%m-%dT%H:%M:%S)
 WEEK_AGO=$(date -u -d "-7 days" +%Y-%m-%dT%H:%M:%S)
 
-# Filter by site if column exists; else omit
-SITE_FILTER=""
-if [[ "[site column exists from Step 0]" == "true" ]]; then
-  SITE_FILTER="&site=eq.$SITE"
-fi
+# Filter by site (column already migrated; safe to apply unconditionally)
+SITE_FILTER="&site=eq.$SITE"
 
-curl -s "$SUPA_URL/rest/v1/decision_sessions?status=eq.completed&purchase_id=is.null&re_engagement_sent=is.null&created_at=lt.$DAY_AGO&created_at=gt.$WEEK_AGO$SITE_FILTER&select=id,email,product_key,created_at,inputs,output,country_code&limit=100" \
+# Production schema uses `converted` boolean, NOT `purchase_id`. Filter
+# for sessions that did NOT convert. (Earlier spec drafts referenced
+# purchase_id IS NULL — that column does not exist on decision_sessions.
+# Probe at Step 0 confirmed the live schema uses `converted`.)
+NOT_CONVERTED_FILTER="&converted=eq.false"
+
+curl -s "$SUPA_URL/rest/v1/decision_sessions?status=eq.completed${NOT_CONVERTED_FILTER}&re_engagement_sent=is.null&created_at=lt.$DAY_AGO&created_at=gt.$WEEK_AGO$SITE_FILTER&select=id,email,product_key,created_at,inputs,output,country_code&limit=100" \
   -H "apikey: $SUPA_KEY" -H "Authorization: Bearer $SUPA_KEY"
 ```
 
 Cap at 100 sessions per run to avoid runaway queues.
+
+#### Schema fallback rules
+- If `converted` column does not exist (PGRST204 / 42703 from Step 0),
+  drop that filter and rely on the cross-check in Step 2 (purchases
+  table lookup) to detect already-bought sessions.
+- If `re_engagement_sent` column does not exist, treat all matching
+  sessions as candidates and surface the ALTER SQL from Step 0 in the
+  agent_log result. Operator runs SQL, then bee runs again with the
+  full filter.
 
 ### Step 2 — For each session, cross-check purchases
 

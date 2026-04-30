@@ -46,6 +46,33 @@ theviabilityindex.com → visa/viability (Phase 7)
 future sites          → queen decides based on topic
 ```
 
+## OPERATOR APPROVAL PATTERN (current — until Soverella UI ships)
+
+The Soverella content queue UI is not yet built. Until it ships, the
+operator approval mechanism for any content_jobs row is a **direct
+Supabase PATCH** changing `status` from its current value (typically
+`pending_approval`) to `approved`:
+
+```bash
+PATCH /rest/v1/content_jobs?id=eq.[job-id]
+Body: {"status": "approved"}
+```
+
+Bee implications:
+- I1 campaign-conductor's `status=eq.approved` filter is the right
+  filter — the PATCH is what flips it.
+- I2 launch-manager's PATCH from `approved` to `launch_approved` is the
+  next step in the chain after I1 has a calendar.
+- When Soverella content queue UI ships (Station K or later), it will
+  simply be a button that fires the same PATCH. **No bee spec changes.**
+  Only the interface changes.
+- The I1 conductor's status fallback rule (try `approved`, fall back to
+  `pending_approval` and stamp calendar rows `draft_pending_approval`)
+  remains the safety net for runs that happen before the operator
+  fires the PATCH.
+
+This documents what is otherwise an undocumented operator workflow.
+
 ## SITE CONTEXT
 
 Every bee invocation must pass:
