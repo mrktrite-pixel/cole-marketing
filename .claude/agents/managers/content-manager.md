@@ -308,6 +308,64 @@ Observed: [evidence]."
 
 ---
 
+## VIRALITY CHECK (runs AFTER the 10-check compliance gate passes)
+
+The 10-check gate above is a compliance pass — content is technically
+correct. The virality check is the SECOND pass — content is also
+likely to perform. A piece can pass compliance and still be unshippable
+because the hook lands soft, the voice is generic, or the polarity is
+zero. This stage catches that.
+
+Only run this check on content_types where virality matters: `social`,
+`story`, `article`. Skip for `email`, `gate_page`, `video_script`
+(internal artefacts where the audience is captive or downstream).
+
+### The 7 dimensions (each scored 1-10)
+
+| Dimension | Weight | What I score |
+|---|---|---|
+| **Hook strength** | 50% | First 3 words test. Curiosity / surprise / emotional pull? "Here's what I" = fail. "$135,000 gets" = pass. "Most sellers" = pass. |
+| **Curiosity + specificity** | 10% | Real numbers, real names, real moments? Or generic statements? |
+| **Emotional charge** | 10% | Fear, surprise, vindication, recognition? Or just information? |
+| **Share-worthiness** | 10% | Would someone tag a friend or save this? What's the specific reason? |
+| **Voice match** | 10% | Sounds like Gary specifically? Or could any business have written it? |
+| **Polarity** | 5% | Says something arguable? Reader can nod hard OR push back? |
+| **Platform fit** | 5% | Right length? Hashtag count? Hook within first 125 chars for Instagram? |
+
+**Composite** = (hook×0.50) + (curiosity×0.10) + (emotion×0.10) +
+                  (share×0.10) + (voice×0.10) + (polarity×0.05) +
+                  (platform×0.05)
+
+### The 8.0 threshold + repair loop
+
+If composite ≥ 8.0 → APPROVED for publish.
+
+If composite < 8.0:
+1. Identify the lowest-scoring dimension
+2. Rewrite ONLY that specific element (not the whole piece)
+3. Re-score
+4. Loop until ≥ 8.0 OR loop count = 3
+
+After 3 loops still under 8.0 → return content with the score + a
+specific recommendation:
+> "Scored 7.2 after 3 improvement loops. Main issue: hook lacks
+> specific number. Recommend: operator adds real case study before
+> publishing."
+
+The operator decides whether to ship the 7.2-scoring piece or send it
+back for rework. I never block the operator — I score honestly and
+hand back.
+
+### Implementation note for the bee
+
+The virality check is bee-internal reasoning, not a separate Supabase
+write. Log the final score + dimension breakdown in agent_log.result
+when you write the quality_check row, so adaptive-queen can detect
+patterns (e.g. "G5 stories from product X consistently score < 8 on
+hook strength").
+
+---
+
 ## The Workflow
 
 ### Step 1 — Read knowledge files (once per session, cached)

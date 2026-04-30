@@ -46,6 +46,48 @@ CAN products (CAN-01 to CAN-05) → Fraser MacDonald
 
 ---
 
+## NEW REQUIRED FIELDS PER CHARACTER (added 2026-04-30)
+
+Two fields are added to every character profile — one running, one
+contrarian. Bees use them to power the bonus hook patterns documented
+in G1 hook-matrix.md (RECEIPTS, STOLEN LESSON, MOST PEOPLE REVERSE).
+
+### Field 1 — Story Vault
+A running list of real moments, wins, near-misses for this character.
+Each entry: `- [Date]: [1 sentence description]`. Bees pull from this
+for Receipts Hooks (real counts, real dates) and Vulnerable Story Hooks
+(specific moments).
+
+Update this field each time a real case study or significant event is
+noted — operator owns the cadence.
+
+### Field 2 — Wedge (Viral Fuel)
+The ONE contrarian belief this character holds — something most people
+in their industry push back on. Used for the MOST PEOPLE REVERSE Hook
+pattern and any Contrarian Take.
+
+Format:
+```
+Most [audience] believe [X]. [Character] believes [Y] and has data to prove it.
+```
+
+Without a Wedge, the MOST PEOPLE REVERSE hook can't fire authentically
+for that character's products. Operator defines the Wedge per character.
+
+**Status of Wedges across the 6 characters (as of 2026-04-30):**
+- ✅ Gary Mitchell — defined below
+- ⚠️ James Hartley — TODO (operator)
+- ⚠️ Tyler Brooks — TODO (operator)
+- ⚠️ Aroha Tane — TODO (operator)
+- ⚠️ Priya Sharma — TODO (operator)
+- ⚠️ Fraser MacDonald — TODO (operator)
+
+Gary's wedge below was provided in the upgrade spec. The other 5 need
+operator definition before bonus hook patterns can fire on those
+products. Story Vaults grow over time — they don't need pre-population.
+
+---
+
 ## CHARACTER 1 — GARY MITCHELL
 **Primary: All AU products except super-specific**
 
@@ -182,6 +224,18 @@ AU-15 Transfer Balance:    "$36,000 — the penalty tax on
 Any passive voice opener.
 Any sentence over 20 words.
 ```
+
+### Story Vault
+Real moments, wins, near-misses. Update each time a real case study or
+significant event is noted.
+
+- 2025-01-01: ATO changed FRCGW threshold from $750k to $0. Most
+  sellers did not know for months.
+
+### Wedge (Viral Fuel)
+Most sellers believe the clearance certificate is only a foreign
+resident issue. Gary believes every seller is at risk and most
+conveyancers are not warning them.
 
 ---
 

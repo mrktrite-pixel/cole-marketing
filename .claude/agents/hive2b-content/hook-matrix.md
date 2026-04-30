@@ -265,6 +265,76 @@ The above are exemplars — generate 20 fresh, distinct hooks within the
 same constraints. Do not literally copy the spec examples into the
 output (would create cross-product duplication).
 
+---
+
+#### Bonus pattern types (use within existing buckets to lift virality)
+
+These three patterns don't change the locked 20-hook distribution. They
+are pattern templates the bee can deploy WITHIN any of the 8 existing
+buckets (most often FACTUAL, RELATABLE, or PROVOCATIVE) when the
+product has the right raw material. Stolen from Blotato hook-virality
+research; landing test-validated.
+
+**RECEIPTS HOOK (highest virality ceiling)**
+
+Pattern: `"I [tested|checked|reviewed] [N] [things]. Only [smaller-N] [outcome]."`
+
+Gary example for AU-19:
+> "I checked 50 settlement statements from 2025. 43 had no clearance certificate on record."
+
+Why it works: specific number + earned right to speak + curiosity gap
+(what happened to those 43?). Use when the operator has real product
+usage data OR the F1 config provides defensible counts (e.g. "43 of
+the 50 ATO-published clearance applications in March 2025 were
+delayed beyond 4 weeks").
+
+Bucket fit: typically FACTUAL or STATISTIC. Voice: confident, slightly
+contrarian. Never invent the count.
+
+**STOLEN LESSON HOOK**
+
+Pattern: `"[Authority] changed [X]. I read the full [document/ruling]. Here is what most [audience] missed."`
+
+Gary example for AU-19:
+> "The ATO changed the withholding threshold to $0 on 1 January 2025. I read the full ruling. Here is what most sellers still don't know."
+
+Why it works: borrowed authority (ATO + specific ruling) + tested-by-me
+proof + reader can act on it immediately. The "missed" framing creates
+the curiosity gap that pulls the click.
+
+Bucket fit: FACTUAL or PROVOCATIVE. Requires legalAnchor from F1 config
+to back the "ruling" reference.
+
+**MOST PEOPLE REVERSE HOOK**
+
+Pattern: `"Most [audience] think [X]. Here's why they're wrong."`
+
+Gary example for AU-19:
+> "Most sellers think the clearance certificate only applies to foreign residents. It doesn't. Here's who it actually catches."
+
+Why it works: forces the reader to pick a side. Polarity drives comments,
+which drives algorithmic distribution on every platform. The reader who
+nods becomes a defender; the reader who pushes back becomes engagement.
+
+Bucket fit: PROVOCATIVE (its native home) or RELATABLE.
+
+Source for the "wrong" position: pull from the character's `Wedge` field
+in CHARACTERS.md. Every character has one — the contrarian belief that
+distinguishes them from the consensus take. Without a Wedge, this hook
+type can't fire authentically.
+
+#### When to deploy bonus patterns
+
+These patterns lift the average hook quality but require real raw
+material:
+- RECEIPTS needs a real count (not a guess)
+- STOLEN LESSON needs a specific cited document
+- MOST PEOPLE REVERSE needs a documented Wedge for the character
+
+If any required input is missing, fall back to the standard 8-bucket
+distribution with no bonus patterns. Better a clean standard hook than
+a fake Receipts.
+
 ### Step 6 — Score and select top 3
 
 For each hook, score 1-10 on three axes:
