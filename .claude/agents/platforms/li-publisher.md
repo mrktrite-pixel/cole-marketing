@@ -147,6 +147,16 @@ If response has rows → extract the account id (`zernio_account_id`
 when SOCIAL_PROVIDER=zernio, `blotato_account_id` when
 SOCIAL_PROVIDER=blotato) and continue.
 
+**Schema gotcha (Zernio)**: `platform_accounts.zernio_account_id`
+must hold the Zernio **account `_id`** (e.g. `69f40768985e734bf3e81f56`),
+NOT the Zernio **profile `_id`** (e.g. `69f40659d50b152587e893c6`).
+A profile can hold multiple platform accounts; only the per-platform
+account `_id` works in `platforms[].accountId` on POST /api/v1/posts.
+Storing the profile id by mistake produces:
+`403 {"error":"One or more accounts do not belong to this user"}`.
+To find the correct `_id`, GET `https://zernio.com/api/v1/accounts` and
+match by `platform=linkedin` + `profileId.name=[site]`.
+
 ### Step 2 — Read approved content + verify state
 
 ```bash
