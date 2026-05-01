@@ -1,17 +1,21 @@
 # AU FRCGW Facts — Verified Reference
 
-> Status: VERIFIED — 0.99 confidence
+> Status: VERIFIED — 0.98 confidence (legislation re-checked April 2026 — 12-L was wrong; 14-D confirmed)
 > Last verified: April 2026
-> Sources: ATO.gov.au + Taxation Administration Act 1953 + Treasury Laws Amendment (Foreign Resident Capital Gains Withholding Modifications) Act 2024
+> Sources: ATO.gov.au legal database (sections 14-200, 14-220, 14-235) + Taxation Administration Act 1953 (Schedule 1) + Treasury Laws Amendment (2024 Tax and Other Measures No. 1) Act 2024 (Act No. 135 of 2024)
 
 ## The Rule
 Name: Foreign Resident Capital Gains Withholding
 Short form: FRCGW
 Operative law: Taxation Administration Act 1953
-  Schedule 1, Subdivision 12-L
-  Section 12-400 — withholding obligation
-  Section 12-405 — clearance certificate + variations
-2025 change via: Treasury Laws Amendment (Foreign Resident Capital Gains Withholding Modifications) Act 2024
+  Schedule 1, Subdivision 14-D — "Capital proceeds involving foreign residents and taxable Australian property"
+  Section 14-200 — withholding obligation (purchaser must pay the Commissioner an amount on acquiring CGT asset that is taxable Australian real property from a foreign resident)
+  Section 14-210 — foreign-resident determination rules
+  Section 14-215 — excluded transactions
+  Section 14-220 — clearance certificate (Commissioner issues this; confirms vendor is Australian resident → no withholding required)
+  Section 14-225 — entity declarations
+  Section 14-235 — variations (Commissioner can vary the amount payable — this is the foreign-resident "variation certificate" path)
+2025 change via: Treasury Laws Amendment (2024 Tax and Other Measures No. 1) Act 2024 (Act No. 135 of 2024), Royal Assent 10 December 2024, commencing 1 January 2025. The amending Act increased the withholding rate from 12.5% to 15% and reduced the threshold from $750,000 to $0.
 ATO page: ato.gov.au/individuals/capital-gains-tax/property-and-capital-gains-tax/foreign-residents-and-cgt/
 
 ## The Threshold
@@ -103,5 +107,10 @@ Primary ATO page:
 Form NAT 74883:
   ato.gov.au/forms-and-instructions/foreign-resident-capital-gains-withholding-clearance-certificate-application-nat-74883
 
-Legislation:
-  legislation.gov.au/Details/C2024A00059
+Legislation (the 1 January 2025 amending Act):
+  legislation.gov.au/C2024A00135/asmade/text
+  (Treasury Laws Amendment (2024 Tax and Other Measures No. 1) Act 2024, Act No. 135 of 2024 — Schedule 1 amends TAA 1953 Schedule 1 Subdivision 14-D)
+
+Operative regime (TAA 1953 Schedule 1 Subdivision 14-D):
+  legislation.gov.au/Series/C1953A00001 (compilation index — search for Subdivision 14-D in the latest compilation)
+  ATO authoritative section text: ato.gov.au/law/view/print?DocID=PAC/19530001/Sch1-14-200&PiT=99991231235958
