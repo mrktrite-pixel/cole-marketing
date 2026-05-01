@@ -92,6 +92,48 @@ Bees that omit `site` on INSERT will get the default — but specs require
 explicit pass-through so Soverella can route per-site analytics cleanly
 once viabilityindex (Phase 7) and soverella (own marketing) come online.
 
+## ENVIRONMENT VARIABLES
+
+cole-marketing local development reads from `.env` (Supabase keys —
+checked in earlier this session) and `.env.local` (additional secrets).
+Both are gitignored. Production secrets live in Vercel.
+
+**IMPORTANT — Vercel project naming:**
+cole-marketing deploys as the **`soverella`** Vercel project (not
+`cole-marketing`). When a bee spec references "Vercel project" for the
+cole-marketing side, use `soverella`. The taxchecknow Vercel project
+is its own deploy target.
+
+### Required env vars (cole-marketing → Vercel project: soverella)
+
+| Variable | Purpose | Required by |
+|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | All bees |
+| `SUPABASE_SERVICE_ROLE_KEY` | Service role for server-side writes | All bees that write to Supabase |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Anon key for client-side reads | Soverella dashboard client components |
+| `BLOTATO_API_KEY` | Video generation + multi-platform publishing | G9 Video Producer, J5 LinkedIn Publisher (and future TT/IG/X publishers) |
+| `INDEXNOW_KEY` | IndexNow ping key | H1 Distribution Bee (`879c5718e8ab4114a247c1b85552331a`) |
+
+Future additions (not yet wired):
+- `LINKEDIN_ACCESS_TOKEN` — direct LinkedIn API (if Blotato fallback needed)
+- `BLOTATO_LINKEDIN_ACCOUNT_ID` — per-platform account id when LinkedIn connected
+- `OPERATOR_EMAIL` — alert routing for time-critical agent_log notifications
+
+### Where keys live
+
+- **`.env`** (cole-marketing) — Supabase keys (committed to .gitignore line 3)
+- **`.env.local`** (cole-marketing) — Blotato + Supabase consolidated for Next.js
+  precedence (committed to .gitignore line 4)
+- **`.env.local`** (taxchecknow) — Stripe + Resend + Supabase + Blotato
+  (gitignored via `.env*` glob)
+- **Vercel `soverella` project** — production source of truth for cole-marketing
+- **Vercel `taxchecknow` project** — production source of truth for taxchecknow
+
+When rotating any key: update Vercel FIRST, then both `.env.local` files,
+then redeploy. Never commit a key to git — every existing `.env*` pattern
+is `.gitignore`-protected, but specs that paste keys into commit messages
+or PR descriptions are equally exposing.
+
 ## Token Routing — Non-Negotiable
 
 ```
