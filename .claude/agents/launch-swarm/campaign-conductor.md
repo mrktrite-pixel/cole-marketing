@@ -160,6 +160,41 @@ breathe between launches.)
 schedule into Week 3+ (Days 15-28) once the social/article sequence has
 produced engagement signals. Video is anchor content, not the hook.
 
+### RULE H — LinkedIn day preference (Tue/Wed/Thu only)
+LinkedIn engagement on Mon/Fri/weekend is materially lower for finance
+content (J1 li-research data confirms). LinkedIn slots MUST land on
+Tue/Wed/Thu.
+
+If the canonical-day calculation places a LinkedIn slot on Mon/Fri/Sat/Sun:
+- Push the slot forward to the NEXT Tuesday
+- Log the move in agent_log:
+  > "LinkedIn slot moved from [original_day, YYYY-MM-DD] to [next-Tuesday,
+  >  YYYY-MM-DD] per Rule H (LinkedIn finance niche prefers Tue/Wed/Thu)."
+
+In code:
+```ts
+function adjustLinkedInDay(date: Date): Date {
+  const dow = date.getUTCDay(); // Sun=0..Sat=6
+  // 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat, 0=Sun
+  if (dow === 2 || dow === 3 || dow === 4) return date;
+  // Find next Tuesday
+  const daysToTuesday = ((2 - dow + 7) % 7) || 7;
+  const adjusted = new Date(date);
+  adjusted.setUTCDate(date.getUTCDate() + daysToTuesday);
+  return adjusted;
+}
+```
+
+This rule was added after the AU-19 J4 li-manager run reported a soft
+fail on Check 10 — Post 1 was scheduled Friday 2026-05-01 (Day 2 from
+the conductor's invocation date Thursday 2026-04-30). Per Rule H going
+forward, a Friday slot would push to Tuesday 2026-05-05. Existing rows
+not retroactively adjusted; this rule applies on subsequent conductor
+runs.
+
+Other platforms (X, Instagram, TikTok, Reddit, email) have no day
+restrictions and use their existing slot logic.
+
 ---
 
 ## Platform publish times (AEST defaults)
