@@ -1,0 +1,52 @@
+POST 1 (parent) — scheduled 2026-05-01 09:00 AEST:
+$135,000 withheld at settlement. Did your conveyancer warn you the FRCGW threshold dropped to $0 on 1 January 2025? Most have not.
+
+Settlement was 3 weeks away. The certificate takes 4 weeks minimum. Gary's accountant called him at 5pm Friday with the news. That was a shit conversation.
+
+Gary Mitchell is 64. Retired electrician. Perth.
+
+He was selling his Bibra Lake investment property for $900,000 in April 2025 when his accountant rang: the ATO would withhold $135,000 at settlement unless a clearance certificate arrived first. The rule changed on 1 January. Processing takes 4 weeks.
+
+$135,000 was two years of rental income. Gary had 46 days. The math was tight.
+
+What most sellers get wrong:
+
+1. The rule applies to EVERY sale. Threshold $750k to $0 on 1 Jan 2025.
+2. The rate is 15%, not 12.5%.
+3. You cannot apply at settlement. The certificate must arrive BEFORE settlement morning or the buyer withholds automatically.
+
+Most conveyancers still have not warned their clients. Most sellers still think this is only a foreign resident issue. It is not.
+
+Gary's accountant lodged within 48 hours. The ATO issued the certificate in 18 days. Three weeks before settlement, it was in the buyer's solicitor's office.
+
+Settlement completed. Full $900,000. No withholding.
+
+If your settlement is in the next 8 weeks, run the check today.
+
+POST 1 (first comment) — same time:
+Run the check, see your exact withholding exposure in 90 seconds:
+
+https://www.taxchecknow.com/au/check/frcgw-clearance-certificate?utm_source=linkedin&utm_medium=post&utm_campaign=au-19-frcgw&utm_content=v1
+
+HASHTAGS (append to parent):
+#AustralianProperty #PropertySettlement #FRCGW #ATOAlert
+
+---
+POST 2 (carousel) — scheduled 2026-05-06 09:00 AEST:
+See video_queue carousel_brief_id 6d81342e-5138-4399-8dd2-aad366b3a54b for the 8-slide design.
+Operator: render the carousel + post manually via LinkedIn document upload.
+
+8-slide brief (mirrored from content_jobs.output_data.linkedin_adapted.carousel_brief_inline):
+Slide 1: $135,000 withheld — on a $900k property sale unless you act
+Slide 2: The myth — Most sellers think this is a foreign resident issue. It is not. Every Australian seller is at risk now.
+Slide 3: The reality — From 1 January 2025: threshold $0, rate 15%. Every settlement, every seller.
+Slide 4: The timeline — Apply 4 to 6 weeks before settlement. Processing 1 to 4 weeks. Settlement date is locked.
+Slide 5: The consequence — Miss the deadline: 15% of sale price withheld. 6 to 18 months to claim back.
+Slide 6: The form — NAT 74883 Australian resident clearance certificate. Free. Lodge via myGov or accountant.
+Slide 7: Run the check — 90 seconds, anonymous, free. Tells you your exact withholding exposure.
+Slide 8: Save this — Comment "checked" if you ran it. Tag a seller who needs this before settlement.
+
+First comment for the carousel post:
+Run the check, see your exact withholding exposure in 90 seconds:
+
+https://www.taxchecknow.com/au/check/frcgw-clearance-certificate?utm_source=linkedin&utm_medium=post&utm_campaign=au-19-frcgw&utm_content=carousel_v1

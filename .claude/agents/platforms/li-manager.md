@@ -93,7 +93,7 @@ PASS if `bodyHasLink === false`. Links belong in the first comment, never the bo
 ```js
 const fc = linkedin_adapted.post1_first_comment;
 const hasUrl = /taxchecknow\.com\/[a-z]+\/check\//.test(fc);
-const hasUtm = /utm_source=social_linkedin/.test(fc) && /utm_campaign=/.test(fc);
+const hasUtm = /utm_source=linkedin\b/.test(fc) && /utm_campaign=/.test(fc);
 ```
 PASS if both `hasUrl` and `hasUtm` are true.
 

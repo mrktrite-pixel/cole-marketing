@@ -109,10 +109,28 @@ Map by `linkedin_strategy.post1.format`:
 [calculator URL with full UTM]
 ```
 
-UTM pattern:
+UTM pattern (short-form — cleaner in LinkedIn comments; GA4 reads
+short and long forms identically):
 ```
-?utm_source=social_linkedin&utm_medium=post&utm_campaign=[product-slug]&utm_content=text_v1
+?utm_source=linkedin&utm_medium=post&utm_campaign=[product-slug-shortened]&utm_content=v1
 ```
+
+`[product-slug-shortened]` rule:
+- Take the first 3 hyphen-separated tokens of `product_key` and drop
+  any trailing tokens longer than that.
+- Cap at 20 characters total. If the 3-token form exceeds 20 chars,
+  truncate to the longest prefix that ends on a token boundary and
+  fits inside 20 chars.
+- Examples:
+  - `au-19-frcgw-clearance-certificate` → `au-19-frcgw`
+  - `uk-04-cgt-main-residence-trap` → `uk-04-cgt`
+  - `au-13-div296-wealth-eraser` → `au-13-div296`
+
+`utm_content` rule:
+- `v1` for the first text post
+- `v2` for the day-14 follow-up post
+- `carousel_v1` for the carousel post (kept verbose so GA4 separates
+  formats cleanly)
 
 ### Rule 6 — Forbidden bash operations
 No sed/awk/echo. Edit/Write/Read tool only.
@@ -152,7 +170,7 @@ Read F1 config to get the canonical calculator URL pattern + country code.
    ```
    [framing line — 60 chars max]
 
-   [calculator URL with utm_source=social_linkedin&utm_medium=post&utm_campaign=[slug]&utm_content=text_v1]
+   [calculator URL with utm_source=linkedin&utm_medium=post&utm_campaign=[slug-shortened]&utm_content=v1]
    ```
 6. Generate the hashtag array (3-5 niche tags).
 
@@ -234,7 +252,7 @@ agent_log:
   action: 'linkedin_adapted',
   site: '[site]',
   product_key: '[product_key]',
-  result: 'Post 1: [post1_text.length] chars, hook in first [N] chars. Post 3: [post3_text.length] chars. Carousel brief id: [...]. First-comment URL UTM: utm_source=social_linkedin.',
+  result: 'Post 1: [post1_text.length] chars, hook in first [N] chars. Post 3: [post3_text.length] chars. Carousel brief id: [...]. First-comment URL UTM: utm_source=linkedin.',
   cost_usd: 0.002
 }
 ```

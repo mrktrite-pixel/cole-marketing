@@ -196,8 +196,8 @@ LinkedIn). Better one-half post than zero.
   blotato_post_id: parent.postId,
   published_at: parent.publishedAt,
   status: 'published_awaiting_data',
-  utm_campaign: '[product-slug]',
-  utm_content: 'text_v1',
+  utm_campaign: '[product-slug-shortened]', // matches J3 short-form (e.g. au-19-frcgw)
+  utm_content: 'v1',
 }
 ```
 
