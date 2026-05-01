@@ -71,17 +71,36 @@ changes — this spec stays identical.
 import { publishPost } from '@/lib/social-publisher';
 ```
 
-### Rule 2 — Two-step LinkedIn first-comment flow
+### Rule 2 — Single-call LinkedIn first-comment flow
 LinkedIn's algorithm rewards posts where the URL is in the first comment
 rather than the parent body (the parent gets more reach if the body is
-zero-link). The two-step is:
+zero-link). Pass the comment text on the same call as the parent — the
+adapter handles the orchestration:
 
-1. `publishPost({ ..., text: parentText })` → returns `postId`
-2. `publishPost({ ..., text: firstCommentText, replyToPostId: postId })`
+```ts
+const result = await publishPost({
+  platform: 'linkedin',
+  accountId: account.zernio_account_id ?? account.blotato_account_id,
+  text: parentText,
+  firstComment: firstCommentText,        // ← single call, both posted
+  scheduledTime,
+  site, productKey,
+});
+// result: { postId, firstCommentPostId?, provider, publishedAt, ... }
+```
 
-Both calls use the same `accountId` from platform_accounts. The
-`replyToPostId` field on `SocialPublishOptions` (added soverella commit
-`3acf0b9`) is what threads the second call to the parent.
+Provider behaviour (transparent to this bee):
+  - **Zernio**: passes `platformSpecificData.linkedin.firstComment` on
+    the parent call. Single API call. Zernio auto-posts the comment.
+    `firstCommentPostId` is undefined (Zernio doesn't surface it).
+  - **Blotato**: publishes the parent, then immediately publishes a
+    follow-up post with `replyToPostId=parent.postId` and
+    `text=firstCommentText`. `firstCommentPostId` is the comment id, or
+    `comment_failed: <reason>` if the second call fails (parent stays
+    live).
+
+Do NOT use the legacy `replyToPostId` option — it's Blotato-specific and
+Zernio rejects it. `firstComment` is provider-agnostic.
 
 ### Rule 3 — Graceful degrade when no account connected
 If `platform_accounts` shows no active LinkedIn row for this site:
@@ -124,7 +143,9 @@ If response is `[]` (no active account) → fallback path:
    manual posting."
 5. STOP — return cleanly. Do not error. Do not PATCH calendar.
 
-If response has rows → extract `blotato_account_id` and continue.
+If response has rows → extract the account id (`zernio_account_id`
+when SOCIAL_PROVIDER=zernio, `blotato_account_id` when
+SOCIAL_PROVIDER=blotato) and continue.
 
 ### Step 2 — Read approved content + verify state
 
@@ -141,7 +162,7 @@ Extract:
 - `output_data.linkedin_adapted.post1_first_comment` — comment with URL
 - `output_data.utm_campaign` — for the comment URL UTM
 
-### Step 3 — Publish the parent post
+### Step 3 — Publish parent + first-comment (single call)
 
 ```ts
 import { publishPost } from '@/lib/social-publisher';
@@ -149,39 +170,30 @@ import { publishPost } from '@/lib/social-publisher';
 const calendarRow = /* fetched from campaign_calendar earlier */;
 const scheduledTime = `${calendarRow.scheduled_date}T${calendarRow.publish_time || '09:00:00'}+10:00`;
 
-const parent = await publishPost({
+const result = await publishPost({
   platform: 'linkedin',
-  accountId: account.blotato_account_id,
+  accountId: account.zernio_account_id ?? account.blotato_account_id,
   text: post1_text,
+  firstComment: post1_first_comment,
   mediaUrls: [],
   scheduledTime,
   site: '[site]',
   productKey: '[product_key]',
 });
-// parent: { postId, platform, provider, publishedAt, scheduledTime }
+// result: {
+//   postId,                  // parent post id
+//   firstCommentPostId?,     // Blotato: comment id; Zernio: undefined
+//                            // (Zernio handles internally); on Blotato
+//                            // failure: 'comment_failed: <reason>'
+//   provider, publishedAt, scheduledTime, platform
+// }
 ```
 
-If the call throws → log error to agent_log + STOP. Do not attempt the
-first-comment call without a valid parent postId. Retry on next run.
+If the call throws → log error to agent_log + STOP. Retry on next run.
 
-### Step 4 — Publish the first comment with the URL
-
-```ts
-const comment = await publishPost({
-  platform: 'linkedin',
-  accountId: account.blotato_account_id,
-  text: post1_first_comment,
-  mediaUrls: [],
-  replyToPostId: parent.postId,
-  site: '[site]',
-  productKey: '[product_key]',
-});
-// comment: { postId, platform, provider, publishedAt }
-```
-
-If the comment call throws → log error + continue to Step 5 (the parent
-is published; the comment can be added manually by the operator from
-LinkedIn). Better one-half post than zero.
+If `firstCommentPostId` starts with `comment_failed:` (Blotato path
+only): parent is live, the comment can be added manually by the
+operator from LinkedIn. Better one-half post than zero.
 
 ### Step 5 — Write content_performance row
 
@@ -193,8 +205,9 @@ LinkedIn). Better one-half post than zero.
   niche: '[niche]',
   platform: 'linkedin',
   content_version: 1,
-  blotato_post_id: parent.postId,
-  published_at: parent.publishedAt,
+  blotato_post_id: result.postId,        // legacy column name, holds parent post id regardless of provider
+  zernio_post_id: result.provider === 'zernio' ? result.postId : null,
+  published_at: result.publishedAt,
   status: 'published_awaiting_data',
   utm_campaign: '[product-slug-shortened]', // matches J3 short-form (e.g. au-19-frcgw)
   utm_content: 'v1',
@@ -221,7 +234,7 @@ curl -s -X PATCH "$SUPA_URL/rest/v1/campaign_calendar?id=eq.[calendar_id]" \
   action: 'linkedin_post_published',
   site: '[site]',
   product_key: '[product_key]',
-  result: 'POST LIVE: parent postId [parent.postId], comment postId [comment.postId or "comment_failed"]. Provider: [parent.provider]. ⚡ ACTION REQUIRED IN 60 MINUTES: reply to ALL comments on this post. First 60 minutes = ~30% more reach. Time limit: [parent.publishedAt + 60 minutes].',
+  result: 'POST LIVE: parent postId [result.postId], firstCommentPostId [result.firstCommentPostId or "(zernio: handled internally)"]. Provider: [result.provider]. ⚡ ACTION REQUIRED IN 60 MINUTES: reply to ALL comments on this post. First 60 minutes = ~30% more reach. Time limit: [result.publishedAt + 60 minutes].',
   cost_usd: 0.001,
 }
 ```
@@ -229,16 +242,16 @@ curl -s -X PATCH "$SUPA_URL/rest/v1/campaign_calendar?id=eq.[calendar_id]" \
 ---
 
 ## Sign-Off J5 (6 checks)
-1. ✅ replyToPostId added to SocialPublishOptions (soverella `3acf0b9`).
+1. ✅ firstComment field on SocialPublishOptions (soverella `8bf9a61` Zernio + provider-agnostic refactor).
 2. ✅ Spec committed.
-3. ✅ Test path A — with active LinkedIn account: parent + comment published, content_performance row written, calendar row PATCHed.
+3. ✅ Test path A — with active LinkedIn account: parent + firstComment published in single call, content_performance row written, calendar row PATCHed.
 4. ✅ Test path B — no active account: drafts file written, calendar untouched, agent_log fallback log.
 5. ✅ content_performance row carries the full wristband.
 6. ✅ agent_log row contains the 60-minute alert.
 
 In every report ALWAYS include:
 - Path taken (adapter vs fallback)
-- Parent postId + comment postId (or comment_failed reason)
+- Parent postId + firstCommentPostId (or "(zernio: handled internally)" / "comment_failed: <reason>")
 - Provider used
 - Calendar row id PATCHed
 - agent_log row id
@@ -252,8 +265,8 @@ In every report ALWAYS include:
 |---|---|
 | platform_accounts empty for linkedin | Fallback to drafts file + log + STOP |
 | content_jobs.linkedin_status not 'li_approved' | STOP with error — J4 hasn't gated |
-| publishPost() throws on parent | STOP, no comment, retry next run |
-| publishPost() throws on comment | Continue, log "comment_failed", parent stays live |
+| publishPost() throws | STOP, retry next run (parent never published, calendar stays scheduled) |
+| Blotato comment leg fails | Adapter returns firstCommentPostId="comment_failed: ..." — parent stays live, log + continue |
 | campaign_calendar PATCH 4xx | Log error, but content_performance row already written so analytics still work |
 | agent_log POST fails | Log to console, return result anyway |
 
