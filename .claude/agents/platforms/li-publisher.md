@@ -102,6 +102,25 @@ Provider behaviour (transparent to this bee):
 Do NOT use the legacy `replyToPostId` option — it's Blotato-specific and
 Zernio rejects it. `firstComment` is provider-agnostic.
 
+#### NOTE — First Comment Link Suppression (2026)
+
+First comment links reduce reach slightly under 360Brew (2026). This
+is intentional behaviour — we trade small reach reduction for UTM
+tracking on individual posts. Doctor Bee will measure the actual
+impact over 5 posts (May 6, 12, 13, 19, plus next product's first
+post). Decision is data-driven, not opinion.
+
+Alternative options if data shows >15% suppression:
+1. Move calculator link to profile bio only (zero tracking per post).
+2. Use first comment for some posts, profile bio only for others
+   (A/B test confirmed by Scientist Bee).
+3. Profile bio + sporadic first comment for trackable campaigns.
+
+Doctor Bee tracks per row: `zernio_post_id`, `has_first_comment_link`
+(bool), `impressions_24h`, `impressions_7d`. Compare cohorts after 5
+posts. If suppression > 15%, escalate to Strategic Queen with the
+data and let operator pick the alternative.
+
 ### Rule 3 — Graceful degrade when no account connected
 If `platform_accounts` shows no active LinkedIn row for this site:
 - Do NOT throw
