@@ -203,6 +203,32 @@ exemplars — they're starting reference, not output.
 
 ## The 7-Step Workflow
 
+### Step 0e — Read lesson files (May 2026 update)
+
+Read these three files in order:
+- `cole-marketing/lessons/confirmed-wins.md`
+- `cole-marketing/lessons/mistake-patterns.md`
+- `cole-marketing/lessons/emerging-patterns.md`
+
+If `confirmed-wins.md` has entries:
+- Apply confirmed patterns to this content.
+- For hooks: prefer confirmed hook patterns.
+- For format: prefer confirmed format types.
+- For tone: bias toward confirmed character voice tweaks.
+
+If `mistake-patterns.md` has entries:
+- Avoid known mistake patterns explicitly.
+- Reject any output containing BLOCKER-severity mistakes.
+- Flag any output containing HIGH-severity mistakes for J4 review.
+
+If `emerging-patterns.md` has entries:
+- Treat as suggestions only — A/B test against current defaults.
+- Do NOT treat as confirmed defaults.
+
+If files empty or missing:
+- Continue without (files populate over time).
+- Log: "Lesson files empty — running without learned constraints."
+
 ### Step 1 — Read knowledge files
 Read VOICE.md + CHARACTERS.md (Gary for AU). Use Read tool.
 
