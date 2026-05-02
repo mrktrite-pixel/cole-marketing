@@ -113,6 +113,9 @@ is its own deploy target.
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Anon key for client-side reads | Soverella dashboard client components |
 | `BLOTATO_API_KEY` | Video generation + multi-platform publishing | G9 Video Producer, J5 LinkedIn Publisher (and future TT/IG/X publishers) |
 | `INDEXNOW_KEY` | IndexNow ping key | H1 Distribution Bee (`879c5718e8ab4114a247c1b85552331a`) |
+| `ANTHROPIC_API_KEY` | Claude API for LLM-tier bees | Bee Runner — `lib/bee-runner/anthropic.ts`. Orchestration-only bees skip cleanly when unset. Required for G3/G5/J3.5/K12/J1.5. |
+| `CRON_SECRET` | Vercel Cron auth token | `app/api/cron/[bee]/route.ts` handlers (P2). All cron handlers reject requests without `Authorization: Bearer ${CRON_SECRET}`. |
+| `ADMIN_API_KEY` | Manual bee invocation auth | `app/api/admin/run-bee/route.ts`. Distinct from CRON_SECRET so cron leaks don't grant manual-trigger access. Used by Soverella "Run Bee" panel + ad-hoc operator curl. |
 
 Future additions (not yet wired):
 - `LINKEDIN_ACCESS_TOKEN` — direct LinkedIn API (if Blotato fallback needed)
