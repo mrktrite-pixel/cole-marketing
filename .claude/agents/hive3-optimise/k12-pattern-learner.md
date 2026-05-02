@@ -1,5 +1,5 @@
 ---
-name: lessons-learned
+name: k12-pattern-learner
 description: >
   K12 Lessons Learned Bee — weekly synthesis. Runs Sunday 08:00 AWST.
   Reads the past 7 days of content_performance + agent_log, looks for
