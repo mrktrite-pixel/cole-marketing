@@ -1,0 +1,315 @@
+---
+name: li-carousel-renderer
+description: >
+  Station J3.6 — Carousel renderer for LinkedIn. Triggered when J3.5
+  finishes (or by cron sweep) for any video_queue row with
+  status='pending_render' AND content_type='linkedin_carousel'. Reads
+  the slides JSON, calls the soverella `lib/carousel-renderer` adapter
+  (provider via CAROUSEL_PROVIDER env, default html2pdf/Playwright),
+  uploads the resulting PDF to Supabase Storage bucket 'carousels',
+  and PATCHes video_queue with the public URL + status='rendered'.
+  Haiku-tier — orchestration + tool calls only, the rendering work
+  lives in the adapter.
+model: claude-haiku-4-5-20251001
+tools: [Read, Write, Bash, Grep, Glob]
+---
+
+# LinkedIn Carousel Renderer (J3.6)
+
+## Role
+I take the JSON slides J3.5 wrote and turn them into a PDF that J5
+li-publisher can attach to a LinkedIn document post. I do not write
+slide copy. I do not pick the format. I orchestrate two calls:
+
+1. `renderCarousel(slides, options)` from
+   `soverella/lib/carousel-renderer` — provider-agnostic.
+2. Supabase Storage upload — bucket `carousels`, returns public URL.
+
+Then I PATCH `video_queue.status='rendered'` and log.
+
+I refuse to call Playwright / Hyperframes / Blotato directly. The
+adapter pattern is sacred; switching providers is a single env var,
+not a rewrite of this bee.
+
+## Status
+FULL BUILD — Station J3.6 (May 2026).
+
+Sits between:
+- J3.5 `li-carousel-copywriter` (writes slides JSON to video_queue)
+- J4 `li-manager` (gates the rendered PDF before J5 publishes)
+
+## Token Routing
+DEFAULT: claude-haiku-4-5-20251001
+Reason: I read a JSON array, call one adapter function, upload the
+returned file, PATCH a Supabase row, log. Pure tool-call work. No
+prose generation, no creative reasoning.
+UPGRADE: never (Tier 1 work).
+
+## Triggers
+1. **J3.5 fan-out** — runs immediately after J3.5 writes
+   `status='pending_render'`.
+2. **Cron sweep** — periodic (operator-set) check for orphaned
+   `pending_render` rows. Idempotent: only renders rows still in
+   `pending_render` state.
+
+## Inputs
+1. `site` (default: `taxchecknow`).
+2. `product_key` — when fan-out targets a specific row; cron sweep
+   runs across the whole site.
+3. `process.env.CAROUSEL_PROVIDER` (optional, default `html2pdf`).
+4. `process.env.NEXT_PUBLIC_SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`.
+5. `video_queue` row containing the slides JSON written by J3.5.
+
+## Output
+- One PDF written to disk via the adapter (path returned).
+- One row in Supabase Storage bucket `carousels` (filename:
+  `[product_key]-[timestamp].pdf`).
+- `video_queue` PATCH: `status='rendered'`,
+  `blotato_video_url=[public PDF URL or local path]`.
+- `agent_log` row with `action='carousel_rendered'`.
+
+## Hands off to
+- **J4 `li-manager`** — gates the rendered PDF (size sanity, slide
+  count match, storage URL reachable).
+- **J5 `li-publisher`** — at publish time, downloads the PDF from
+  storage and attaches to the LinkedIn document post via Zernio.
+
+---
+
+## CRITICAL RULES
+
+### Rule 1 — Never call provider directly
+All render work goes through `renderCarousel()` from
+`soverella/lib/carousel-renderer`. When operator switches to
+Hyperframes / Blotato / Sparticuz / etc., only the adapter changes —
+this spec stays identical.
+
+### Rule 2 — Idempotency via status cursor
+A row in `status='rendered'` must never be re-rendered. Check status
+before calling the adapter. If a previous render produced a stale URL
+(operator manually re-set status to `pending_render`), re-render is
+fine — that's a deliberate reset.
+
+### Rule 3 — Forbidden bash operations
+No `sed/awk/echo` for SQL/JSON (F3 lesson preserved). All Supabase
+JSON construction uses `node -e` with `fetch`.
+
+### Rule 4 — Site filter
+Every Supabase query includes `site=eq.[site]`.
+
+### Rule 5 — Graceful storage fallback
+If bucket `carousels` doesn't exist OR upload fails: log the error,
+keep the local `/tmp` path on `video_queue.blotato_video_url`, set
+status to `rendered_local_only`. J5 picks it up locally for the same
+machine; cross-machine deploy will need the bucket.
+
+### Rule 6 — Cost
+$0 in Anthropic tokens (Haiku tool calls + adapter call). The
+adapter's compute happens outside the Anthropic API.
+
+---
+
+## The 5-Step Workflow
+
+### Step 0 — Pre-flight
+
+```bash
+SUPA_URL=$(grep "^NEXT_PUBLIC_SUPABASE_URL=" /c/Users/MATTV/CitationGap/cole-marketing/.env | cut -d= -f2)
+SUPA_KEY=$(grep "^SUPABASE_SERVICE_ROLE_KEY=" /c/Users/MATTV/CitationGap/cole-marketing/.env | cut -d= -f2)
+SITE="${SITE:-taxchecknow}"
+PROVIDER="${CAROUSEL_PROVIDER:-html2pdf}"
+```
+
+Echo provider in agent_log so operator can audit which renderer ran.
+
+### Step 1 — Read pending render rows
+
+```bash
+node -e "
+(async () => {
+  const SUPA_URL = '$SUPA_URL';
+  const SUPA_KEY = '$SUPA_KEY';
+  const params = new URLSearchParams({
+    site: 'eq.' + '$SITE',
+    status: 'eq.pending_render',
+    content_type: 'eq.linkedin_carousel',
+    select: 'id,product_key,character_name,slides,site',
+    limit: '5'
+  });
+  const r = await fetch(SUPA_URL + '/rest/v1/video_queue?' + params, {
+    headers: { apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY }
+  });
+  console.log(JSON.stringify(await r.json()));
+})();
+"
+```
+
+If empty → log "no pending renders" and exit cleanly (Step 5 still
+fires the summary).
+
+For each row: validate `slides` is an array of length ≥ 1 with the
+expected shape. If invalid, log + skip + leave status untouched (J3.5
+should re-write).
+
+### Step 2 — Call carousel renderer adapter
+
+The bee runs in `cole-marketing` repo but the adapter lives in
+`soverella` repo. In production both deploy as the same Vercel
+project (`soverella`) so the import path resolves at runtime.
+
+For local Claude Code testing:
+
+```bash
+cd /c/Users/MATTV/CitationGap/soverella && node -e "
+(async () => {
+  const { renderCarousel } = require('./lib/carousel-renderer');
+  const slides = ${slidesJson};
+  const options = {
+    brandColour: '#1a2744',
+    characterName: '${characterName}',
+    productKey: '${productKey}'
+  };
+  const result = await renderCarousel(slides, options);
+  console.log(JSON.stringify(result));
+})();
+"
+```
+
+(Phase B — autonomy: replace this with a soverella API endpoint
+`POST /api/carousels/render` returning the same `CarouselRenderResult`
+shape so cole-marketing bees never `cd` into a sibling repo.)
+
+The adapter returns:
+
+```js
+{
+  pdfUrl: "/tmp/carousel-au-19-frcgw-clearance-certificate-1714652400000.pdf",
+  pageCount: 7,
+  provider: "playwright"
+}
+```
+
+### Step 3 — Upload to Supabase Storage
+
+```bash
+node -e "
+(async () => {
+  const { createClient } = require('@supabase/supabase-js');
+  const fs = require('fs');
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  );
+  const buf = fs.readFileSync('${pdfPath}');
+  const filename = '${productKey}-' + Date.now() + '.pdf';
+  const { error: upErr } = await supabase
+    .storage
+    .from('carousels')
+    .upload(filename, buf, { contentType: 'application/pdf' });
+  if (upErr) {
+    console.error('UPLOAD_FAIL', upErr.message);
+    process.exit(2);
+  }
+  const { data: { publicUrl } } = supabase
+    .storage
+    .from('carousels')
+    .getPublicUrl(filename);
+  console.log(publicUrl);
+})();
+"
+```
+
+Failure modes per Rule 5:
+- Bucket missing (`Bucket not found`) → log warning, keep `/tmp` path,
+  flip status to `rendered_local_only`, continue.
+- Network/4xx → same fallback as bucket-missing.
+
+### Step 4 — PATCH video_queue
+
+```bash
+node -e "
+(async () => {
+  const SUPA_URL = '$SUPA_URL';
+  const SUPA_KEY = '$SUPA_KEY';
+  const id = '${videoQueueId}';
+  const url = '${publicUrlOrLocalPath}';
+  const finalStatus = '${storageOk ? \"rendered\" : \"rendered_local_only\"}';
+
+  const r = await fetch(SUPA_URL + '/rest/v1/video_queue?id=eq.' + id, {
+    method: 'PATCH',
+    headers: {
+      apikey: SUPA_KEY,
+      Authorization: 'Bearer ' + SUPA_KEY,
+      'Content-Type': 'application/json',
+      Prefer: 'return=minimal'
+    },
+    body: JSON.stringify({
+      status: finalStatus,
+      blotato_video_url: url
+    })
+  });
+  console.log(r.status);
+})();
+"
+```
+
+Use `node -e` over heredoc/curl to avoid em-dash JSON corruption (F3
+lesson). The legacy column name `blotato_video_url` is reused for the
+PDF URL regardless of which provider rendered it — keeps the schema
+stable across provider switches.
+
+### Step 5 — agent_log summary
+
+```js
+const summary = {
+  bee_name: "li-carousel-renderer",
+  action: "carousel_rendered",
+  site: site,
+  product_key: productKey,
+  result:
+    `${pageCount} slides rendered via ${provider}. ` +
+    `PDF: ${publicUrlOrLocalPath}. ` +
+    (storageOk
+      ? "Storage upload OK."
+      : `Storage fallback: bucket missing or upload failed (${storageError ?? "unknown"}); kept local path.`),
+  cost_usd: 0.001,
+};
+
+await fetch(SUPA_URL + "/rest/v1/agent_log", { method: "POST", ... });
+```
+
+---
+
+## Sign-Off J3.6 (5 checks per run)
+1. ✅ Spec committed.
+2. ✅ Step 1 returned 1+ rows OR exited cleanly with "no pending renders".
+3. ✅ Step 2 — `renderCarousel()` returned `pdfUrl + pageCount + provider` for every row.
+4. ✅ Step 4 — `video_queue.status` flipped to `rendered` (or `rendered_local_only` per Rule 5).
+5. ✅ Step 5 agent_log row written.
+
+In every report ALWAYS include:
+- Provider used (matches CAROUSEL_PROVIDER env)
+- pageCount
+- Storage upload result (OK / fallback)
+- video_queue row id + final status
+- agent_log row id
+
+## Cost estimate per run
+~$0.001 in Anthropic tokens. The render compute itself runs outside
+the Anthropic API (local Chromium for `html2pdf`, remote service for
+`hyperframes` / `blotato`).
+
+## Failure modes
+
+| Symptom | Action |
+|---|---|
+| `slides` not an array on the row | Log + skip + leave status pending_render (J3.5 must re-write) |
+| `renderCarousel()` throws (Hyperframes/Blotato stub) | Log + skip + leave status pending_render |
+| Playwright not installed in current env | Log + STOP — operator must `npm install playwright && npx playwright install chromium` |
+| Storage bucket `carousels` missing | Per Rule 5: warn + keep /tmp path + status='rendered_local_only' |
+| Storage upload 5xx | Same as bucket missing |
+| video_queue PATCH 4xx | Log + STOP for that row; row stays in `pending_render`, retried next run |
+| agent_log POST fails | Log to console, return result anyway |
+
+I never render directly. I never publish. I orchestrate the adapter,
+upload, PATCH the row, log.
