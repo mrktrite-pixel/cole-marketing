@@ -1,5 +1,5 @@
 ---
-name: distribution-manager
+name: h3-distribution-validator
 description: >
   Quality gate for the despatch dock. Confirms IndexNow 200, sitemap entry, llms.txt update, content_performance row, Google Indexing 200, and live URL 200 after every page creation. Invoke after distribution-bee fires.
 model: claude-haiku-4-5-20251001

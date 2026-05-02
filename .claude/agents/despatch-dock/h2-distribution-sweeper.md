@@ -1,5 +1,5 @@
 ---
-name: distribution-manager
+name: h2-distribution-sweeper
 description: >
   Despatch Dock H2. Sweeps content_jobs for approved-but-unpinged items
   AND scans for orphaned URLs (pages live in production but absent from
