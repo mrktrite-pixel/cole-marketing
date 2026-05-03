@@ -81,7 +81,7 @@ For a 6-year rental + 2-year occupation pattern: **~75% of the gain is taxable.*
 
 4. **Spousal main residence:** A married couple can only nominate ONE main residence between them at any time (with limited exceptions for relationship breakdown). If your spouse claimed another property as main residence during the period, you cannot claim this one.
 
-5. **CGT discount eligibility:** Holding period for the 50% discount is measured from the s.118-192 deemed acquisition date (date you first moved in), not from original purchase. Properties sold within 12 months of moving in get NO discount.
+5. **CGT discount eligibility:** The 12-month ownership period for the 50% CGT discount runs from the ORIGINAL acquisition date, NOT from the s.118-192 deemed acquisition date. The cost base resets under s.118-192 but the ownership period does not restart. Per ITAA 1997 Subdivision 115-A, the holding period is measured from when you first acquired the asset.
 
 ## The Deadline
 
@@ -103,8 +103,8 @@ For sellers currently caught:
 **MYTH:** "I'll just claim it was always my intention to live in it."
 **FACT:** Intention is irrelevant. The ATO measures actual occupation. If a tenant lived there before you, the income-producing use clock has started.
 
-**MYTH:** "Holding period for CGT discount counts from when I bought it."
-**FACT:** Under s.118-192, the deemed acquisition date is when you first moved in. If less than 12 months has passed between moving in and sale, no 50% discount available.
+**MYTH:** "The s.118-192 cost base reset also restarts my CGT discount holding period."
+**FACT:** No. The cost base resets to market value at first income use, but the ownership period for the 12-month CGT discount runs from the original acquisition date per Subdivision 115-A. These are two separate rules — one resets the cost base, the other measures holding period.
 
 **MYTH:** "I can use a current valuation to minimize tax."
 **FACT:** Cost base is locked to market value on the day you first moved in. A current valuation is not relevant. Get a contemporaneous valuation if moving in to a previously-rented property.
