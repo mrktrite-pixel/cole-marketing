@@ -116,6 +116,8 @@ is its own deploy target.
 | `ANTHROPIC_API_KEY` | Claude API for LLM-tier bees | Bee Runner — `lib/bee-runner/anthropic.ts`. Orchestration-only bees skip cleanly when unset. Required for G3/G5/J3.5/K12/J1.5. |
 | `CRON_SECRET` | Vercel Cron auth token | `app/api/cron/[bee]/route.ts` handlers (P2). All cron handlers reject requests without `Authorization: Bearer ${CRON_SECRET}`. |
 | `ADMIN_API_KEY` | Manual bee invocation auth | `app/api/admin/run-bee/route.ts`. Distinct from CRON_SECRET so cron leaks don't grant manual-trigger access. Used by Soverella "Run Bee" panel + ad-hoc operator curl. |
+| `GA4_SERVICE_ACCOUNT_KEY` | GA4 Data API service-account JSON (raw JSON string, not base64). Service account must have **Viewer** on the GA4 property. | K-Analytics-1 Doctor Bee (P5.5) — `lib/adapters/ga4.ts`. Without it, Doctor Bee logs `ga4_skipped: true` and skips calculator-visit attribution. |
+| `GA4_PROPERTY_ID` | Numeric GA4 property id (digits only, no `properties/` prefix). | K-Analytics-1 Doctor Bee (P5.5) — `lib/adapters/ga4.ts`. Required alongside `GA4_SERVICE_ACCOUNT_KEY`. |
 
 Future additions (not yet wired):
 - `LINKEDIN_ACCESS_TOKEN` — direct LinkedIn API (if Blotato fallback needed)
