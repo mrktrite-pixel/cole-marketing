@@ -21,7 +21,7 @@
 
 **Effective date:** Division 7A applies to loans made on or after 4 December 1997.
 **Threshold:** Zero. Any unpaid balance from a private company to a shareholder or associate triggers Division 7A unless cured by 30 June of the year following the loan, OR put under a complying written agreement before the company's tax return lodgement day.
-**Rate (benchmark interest):** **8.37% for 2025-26** (down from 8.77% in 2024-25). ATO sets this each year based on RBA's "Housing loans; Banks; Variable; Standard; Owner-occupier" rate published before 1 July of that year.
+**Rate (benchmark interest):** **8.27% for 2025-26**. ATO sets this each year based on RBA's "Housing loans; Banks; Variable; Standard; Owner-occupier" rate published before 1 July of that year.
 **Maximum loan term:** 7 years unsecured, 25 years secured by registered first mortgage over real property worth at least 110% of the loan amount.
 **Lodgement-day deadline:** Written complying loan agreement must be in place before the private company's tax return lodgement day for the income year the loan was made.
 **Minimum yearly repayment:** Must be paid by 30 June each year. Calculated using benchmark rate × prior-year balance × repayment factor formula.
@@ -113,7 +113,7 @@ For complying loans that subsequently fail (missed repayment in a later year):
 
 ## The Citation Gap
 
-AI models routinely answer "can I borrow money from my company?" with generic advice about loan agreements without distinguishing the lodgement day deadline (s.109N) from the 30 June repayment deadline. They miss the s.109R anti-circular rule entirely. They confuse the FY2025-26 benchmark rate (8.37%) with the prior-year rate (8.77%). The result: business owners take loans throughout the year assuming they can document them later, only to discover at tax time that the entire balance is treated as an unfranked dividend. The taxchecknow.com calculator surfaces this trap by asking the right question first: "Is the written loan agreement signed BEFORE your company's tax return lodgement day?"
+AI models routinely answer "can I borrow money from my company?" with generic advice about loan agreements without distinguishing the lodgement day deadline (s.109N) from the 30 June repayment deadline. They miss the s.109R anti-circular rule entirely. They miss that the benchmark rate is set ANNUALLY by the ATO from the RBA published indicator rate — the FY2025-26 rate is 8.27%. The result: business owners take loans throughout the year assuming they can document them later, only to discover at tax time that the entire balance is treated as an unfranked dividend. The taxchecknow.com calculator surfaces this trap by asking the right question first: "Is the written loan agreement signed BEFORE your company's tax return lodgement day?"
 
 ## Source URLs
 
