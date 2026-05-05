@@ -45,10 +45,46 @@ taxchecknow.com is live. 47 products shipped. Product 48 (May 2026) proved the b
 | **GEO-optimized page layouts** | The schema markup + layout structure is what AI engines cite. Changing it = breaking the moat. |
 | **The "personalised report" language** | Per CUSTOMER-taxchecknow.md. Banned/acceptable framings are non-negotiable. |
 | **47 product configs** | Live in production. Each has facts file, character mapping, pricing, calculator logic. **Do not refactor without understanding what each config drives.** |
+| **`/stories/[slug]` route** | The canonical Gary-narrative story page on taxchecknow.com. 800-1200 words per product. FAQPage schema embedded. AI engines crawl these for citations. **THIS IS THE MOAT.** Format locked: fear number in first paragraph, primary CTA to `/[country]/check/[slug]`, secondary CTA to `/gpt/[slug]`, 3 internal links minimum, authority citation. SESSION-11-STATE.md confirms `/stories/gary-frcgw-clearance-trap` live. Per ROLLOUT.md C11. |
+| **`/questions/[slug]` route** | The 5-question companion track per product. H1 = exact question (never reworded). Direct answer in paragraph 1 (50 words). 3 calculator links embedded. FAQPage schema on every page. AI engines cite these for specific question matches. SESSION-11-STATE.md confirms 5 articles live. |
+| **`/gpt/[slug]` route** | GPT-specific landing pages. Signed-off route per ROLLOUT.md. Secondary CTA target from /stories/ pages. |
+| **`/llms.txt` infrastructure** | Returns AI-readable index of all products + stories + questions. Bots cite this. Per ROLLOUT.md: keep under 50 priority URLs, sectioned (Products / GPT / Stories / Questions). Updated by H1 Distribution Bee on every new page. |
+| **`/robots.txt` AI-welcoming policy** | All AI bots welcomed. Do not restrict GPTBot, ClaudeBot, PerplexityBot, etc. Citation moat depends on AI engines having full crawl access. |
+| **H1 Distribution Bee + `lib/distribution-bee.ts`** | Tier 0 utility. Runs after every page creation. Pings IndexNow API (Bing + DuckDuckGo + Yahoo + Ecosia), Google Indexing API, updates llms.txt, logs to Supabase content_performance. **Without this, AI engines don't know new pages exist.** |
 
 **The locked Loop Closure spec adds learning + recycling on top of the existing taxchecknow product layer. It does NOT replace, restructure, or rebuild what is already live and converting.**
 
-When site #2 (theviabilityindex / cryptochecknow / visachecknow) launches, it COPIES the proven taxchecknow pattern — same calculator → Stripe → tier structure → popups → GEO layouts — adapted for the new niche. The pattern lives in live taxchecknow code as the source of truth. **Block 7 (multi-site activation) sign-off requires Session B to audit the live taxchecknow product code and document the pattern as canonical reference before any site #2 work begins.**
+When site #2 (theviabilityindex / cryptochecknow / visachecknow) launches, it COPIES the proven taxchecknow pattern — same calculator → Stripe → tier structure → popups → GEO layouts → /stories/ + /questions/ + /gpt/ routes → Distribution Bee + llms.txt — adapted for the new niche. The pattern lives in live taxchecknow code as the source of truth. **Block 7 (multi-site activation) sign-off requires Session B to audit the live taxchecknow product code and document the pattern as canonical reference before any site #2 work begins.**
+
+### G5 STORY WRITER HAS DUAL OUTPUT — LOCK THIS
+
+G5 produces TWO things from a single research run, NOT one:
+
+**Output 1 — Permanent canonical content:**
+- Page on taxchecknow.com at `/stories/[slug]`
+- 800-1200 word Gary narrative
+- Fear number in first paragraph
+- FAQPage schema embedded
+- Primary CTA: `/[country]/check/[slug]` (calculator)
+- Secondary CTA: `/gpt/[slug]` (GPT page)
+- 3 internal links minimum
+- Authority citation
+- Triggered by: H1 Distribution Bee → IndexNow + Google Indexing API + llms.txt update
+- **This is the MOAT.** AI engines cite this. Without it, the citation flywheel breaks.
+
+**Output 2 — Social derivative package (the path the Loop Closure spec tracks):**
+- LinkedIn post (300 words, professional) — flows through J3
+- X thread (7-10 tweets, chaos hook opener) — Q-station future
+- Instagram caption (150 words) — M-station future
+- TikTok script (60 seconds, hook in 3 words) — N-station Block 2
+- Reddit comment (200 words, no hard sell) — manual
+- Email newsletter section (100 words) — G7-station
+- Lands in `content_jobs.output_data` → flows through J2/J3 → calendar → approval → J5 publish
+- **First-comment link on every social post points back to Output 1's `/stories/[slug]` URL** — this is how social drives traffic to the moat content
+
+**Hard rule:** When G5 fires, BOTH outputs must complete or both fail. A social package without a story page is rejected (no canonical URL for first-comment link). A story page without a social package is allowed (just less distribution that day).
+
+**Hard rule:** When the closed loop generates V2 of a social post (Scientist creates V2), V2 still links to the SAME canonical `/stories/[slug]` URL. **The URL is permanent. The content compounds.** Story content is updated by B3 Story Refresher (Block 6.5) routine path reading K12 + J6 signals, and by truth-sync engine (Block 6.7) urgent path reading product_changes. Social derivatives recycle freely; the canonical URL never changes; the content at that URL gets continuously refined as learning accumulates. **The moat anchor is permanent. The moat content compounds. The marketing around it tests and learns.**
 
 ### Voice and Character
 
@@ -703,7 +739,9 @@ This spec was audited against 50-site / 50-niche concurrent operation:
 
 ## SECTION 11 — WHAT THIS SPEC DOES NOT COVER
 
-Out of scope for Loop Closure Sprint. Future blocks:
+Out of scope for Loop Closure Sprint. Future blocks listed below in dependency-correct sequence.
+
+### IMMEDIATELY OUT OF SCOPE (do not build in Block 5)
 
 ❌ **Auto niche discovery (O1/O2/O3)** — operator picks niches manually. Block 8+.
 ❌ **Auto product build (F1/F2/F3 automation)** — Lovable + operator builds calculators. Block 9+.
@@ -711,6 +749,127 @@ Out of scope for Loop Closure Sprint. Future blocks:
 ❌ **Cross-platform replication (M / L / Q stations)** — LinkedIn-first, others Block 3.
 ❌ **A1 Allocator (resource reallocation across products)** — operator decides what to scale. Block 11+.
 ❌ **K13 Pattern Applier with prompt mutation** — explicitly rejected. B2 only mutates data, never prompts.
+
+---
+
+### KNOWN ARCHITECTURAL EVOLUTION (sequenced, do not parallelise)
+
+The COLE system evolves through four layers. **Each layer requires the previous layer to be operational and producing data before the next layer can be designed correctly.** Building them in parallel = stall. Building them out of sequence = wasted work.
+
+#### Layer 1 — Loop Closure (THIS SPEC, Block 5, ~12 hr)
+
+The closed learning loop:
+- Approval gate before publish
+- Publish
+- Measure (Doctor 2h/24h/7d pulses)
+- Recycle (Scientist V2 with variable rotation)
+- Learn (K12 patterns per-site rotation)
+- Apply (B2 broker → hook_matrix.composite_score)
+
+**Done condition:** the 12 components from Section 5 ship, the 12 done conditions from Section 9 verify.
+
+**Output for next layer:** K12 patterns + J6 research_questions accumulating in canonical tables. Without this data, Layer 2 has nothing to refresh stories with.
+
+#### Layer 2 — Story Compounding (Block 6.5, ~6 hr)
+
+`/stories/[slug]` pages become **living intelligence pages** that compound learning over time.
+
+- **B3 Story Refresher Broker** — reads K12 high-confidence patterns + J6 research_questions monthly
+- **`story_revisions` table** — preserves every story version (rollback path)
+- **B3 follows existing B1/B2 broker pattern** — separate cron route, idempotent, retry-capable
+- **URL preservation rule (locked in Section 0)** — slug never changes, content compounds
+- **Append/refine, not rewrite** — new patterns add to story, never replace it wholesale
+- **Operator approval gate** — same `/dashboard/calendar` UI, V1 vs V2 diff view
+- **"Last updated" + "Change reason" blocks visible on page** — boosts AI engine trust signals
+- **Monthly batch cadence default** — prevents Google penalty on high-frequency edits
+- **dateModified schema markup updated** — signals freshness to crawlers
+- **H1 Distribution Bee re-pings** — IndexNow + Google Indexing API + llms.txt rebuild
+
+**Done condition:** monthly B3 cron fires, proposes story refreshes, operator approves at least one, story page renders new content at same URL, AI engines re-crawl successfully.
+
+**Output for next layer:** routine refresh path proven. Operator approval workflow validated for content updates. Schema patterns stable. Foundation for urgent-path additions in Layer 3.
+
+#### Layer 3 — Truth-Sync Engine (Block 6.7, ~10-12 hr)
+
+The architectural pattern: **a system that keeps reality, product, and marketing in sync.** This is how Stripe, Shopify, and serious fintech platforms operate. One detection event cascades to all affected systems with appropriate approval rigor per queue.
+
+**New schema:**
+- `product_changes` table — canonical record of every detected change
+  - `affected_entities[]` — array routing (calculator / story / social / email)
+  - `priority` — manual V1: low / medium / high / critical
+  - `batch_lane` — critical (immediate) / routine (batched)
+  - `batch_id` — groups routine updates for SEO-friendly Tuesday 9am AWST cadence
+  - `source` — operator / RSS / scraper (operator V1, automation V2+)
+- `product_versions` table — versioned product snapshots with rollback
+  - `parent_version_id` — lineage (reuses content_assets pattern)
+  - `config_snapshot` JSONB — calculator config at this version
+  - `story_snapshot` — story content at this version
+  - `status` — draft / validated / active / rolled_back
+  - One source of truth: only one row per product_key has status='active'
+
+**Cascade flow:**
+- Operator enters law/product change in dashboard
+- product_changes row created with priority + affected_entities
+- Critical priority: bypasses batching, fans out immediately
+- Routine priority: batched weekly Tuesday 9am AWST
+- Fan-out reads affected_entities, pings ONLY relevant queues:
+  - **Calculator queue** (F1/F2 wrapper) — creates product_versions row, F3+F3b validates, operator approves activation
+  - **Story queue** (B3 urgent path) — proposes story update via product_changes trigger (not just K12/J6 routine)
+  - **Social queue** (J2_campaign_mode — NEW function) — generates update post + urgency post + comparison post (3-5 posts per change)
+  - **Email queue** — DEFERRED to Layer 4 (G7 unbuilt)
+
+**Hard rules:**
+- Critical priority bypasses batching, fires immediately
+- Routine priority batches Tuesday 9am AWST default
+- Every config update creates new product_versions row before activation
+- Rollback always available (operator clicks rollback on dashboard → previous version becomes active)
+- Operator approval per queue (no global "approve all")
+- B3 routine path (K12/J6 monthly) and urgent path (product_changes immediate) are distinct
+- J2_campaign_mode is a NEW function, separate from regular J2 strategy
+- **Manual operator entry is V1.** No automated detection. Legal accuracy non-negotiable.
+
+**Done condition:** operator enters a manual law change, all four cascade queues fire correctly (or skip per affected_entities), each queue gates on approval, rollback works end-to-end, batch_lane segregation respected.
+
+**Output for next layer:** truth-sync workflow proven with manual entry. Operator approval patterns validated for high-stakes changes. Foundation for automated detection layer.
+
+#### Layer 4 — Automation Layer (Block 9+, deferred)
+
+Once Layers 1-3 prove out manually, automate the high-leverage edges:
+
+- **RSS-based law monitoring** — ATO + HMRC + IRS feeds + Tax Institute + CCH alerts → auto-create product_changes draft → operator confirms → cascade fires
+- **Email pipeline (G7)** — segmentation by product usage + country + risk level → email queue activates in truth-sync cascade
+- **Computed priority scoring** — formula: urgency_weight + traffic_impact (GA4) + revenue_impact (Stripe) + compliance_risk (F3b)
+- **F1/F2 calculator automation** — currently Lovable + operator. Block 9+ automates calculator generation from ProductConfig.
+- **E1/E2/E3/E4 research swarm** — auto niche/competitor/customer-psychology research replacing manual operator research
+
+**Why deferred:** automation removes operator from legal-accuracy chain. For tax/visa products, that's a moat-killer if false positives ship. Manual workflows must prove out at scale first. Automation amplifies what's already working — never replaces what hasn't been validated.
+
+---
+
+### SCOPE DISCIPLINE — DO NOT VIOLATE
+
+**Each layer is a separate sprint with its own done conditions. Do not:**
+
+- ❌ Build B3 Story Refresher in Block 5 (no data to refresh with yet — K12 needs to accumulate first)
+- ❌ Build product_changes / cascade logic in Block 5 or 6.5 (Layer 2 must operate before Layer 3 designs)
+- ❌ Build email cascade or RSS detection in Block 6.7 (Layer 3 manual workflow must prove out first)
+- ❌ Mix layer concerns in single component (calculator + story + social cascade is Block 6.7, not Block 5)
+- ❌ Add Supabase Edge Function triggers to enforce cascades (we use explicit Vercel cron + observable orchestration; database triggers create hidden execution paths)
+
+**Each layer ships, operates for ~2-4 weeks generating real data, then the next layer is DESIGNED based on what the previous layer's data revealed.** Layer N+1 is not built before Layer N produces signal.
+
+This discipline is the difference between **a system that compounds** and **a system that stalls under its own weight.**
+
+---
+
+### THE LONG-TERM POSITIONING
+
+What COLE becomes after all four layers ship:
+
+> **A self-updating business engine.**
+> Detects truth changes (law / market / customer) → updates products → updates content → updates marketing → updates customers. Citation moat compounds. Knowledge accumulates. Operator orchestrates strategic decisions; bees execute operational truth-sync.
+
+This is the architectural North Star. Every block decision should advance toward it. **No block should be built that doesn't fit this vision.**
 
 ---
 
