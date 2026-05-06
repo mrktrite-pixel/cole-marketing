@@ -1014,6 +1014,13 @@ Phase 1.5a CLOSED. Ready for operator commit Day 2 morning.
 
 Append-only log of edits to this file.
 
+## May 7 2026 — Day 1 close-out: Phase 1.5a sign-off + 2 new canonical sections
+
+- New canonical section: "OPERATOR BOUNDARIES — SESSION B SCOPE BY SITE" — locks the taxchecknow Surface 3 (success-page rendering, /api/get-assessment, personalised content, 47 product configs) as off-limits to Session B; future cluster sites get end-to-end build as system-test targets
+- New canonical section: "EMAIL ADDRESS STANDARD" — locks `hello@<site>.com` customer-facing pattern + `admin@<site>.com` internal pattern + Resend/Namecheap stack + 15-box pre-launch checklist for new sites
+- DAY 1 HOUSEKEEPING LOG expanded: SHIPPED section now covers all 4 phases (0/1/2/1.5a); 4 new discoveries added (#20-23) covering Step 3 verification, HTML-entity D-task, Save-box CTA state bug, Resend+Namecheap integration
+- OPERATOR SIGN-OFF subsection added — Phase 1.5a closed May 7 2026 after visual spot-check + live save-box round-trip verification
+
 ## May 6 2026 — Day 1 site registration + manual queen roles + brand strategy + partial Day 1 housekeeping
 
 - New section: "MANUAL QUEEN ROLES — DAY 1 (MAY 6 2026)" — documents the 4 manual queen roles and transition plan to autonomy across Block 5/8/9

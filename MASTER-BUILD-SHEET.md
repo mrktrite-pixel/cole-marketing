@@ -6,6 +6,30 @@
 
 ---
 
+## 10-DAY SPRINT (MAY 6 – MAY 15 2026) — DAY 1 STATUS
+
+This is the operator-driven 10-day sprint that runs ON TOP of the
+block tracking below. Block work is the architectural plan; the
+10-day sprint is the operator-supervised execution sequence with
+phase-by-phase approval gates.
+
+| Phase | Day 1 Status | Notes |
+|---|---|---|
+| Phase 0 — Site Registration + Validation Gate | ✅ done | `site_context` table created in Supabase (project ngxuroxsabyamqcnvrei); `taxchecknow` row INSERTed; 6-check Validation Gate PASSED (4 ✅ / 2 ⚠️ / 1 🔴 — gaps known not silent); manual queen roles documented; brand strategy locked; operational acknowledgments registered |
+| Phase 1 — Funnel Diagnostic | ✅ done (audited) | Funnel verdict locked: empty top-of-funnel, not leaking. Carousel Outcome A confirmed at 09:00:36 UTC May 6 — first ever cron-driven LinkedIn publish via scheduled-publisher. Phase 1.5b publisher fix CANCELLED (system working as designed) |
+| Phase 2 — T2 Email Audit (CARD-B-EMAIL-AUDIT-1) | ✅ AUDITED (verdict 🔴) | Pre-fix: post-purchase `lib/cole-email.ts` had 9 concrete defects (UK-hardcoded chrome, broken CTA href, double-prefix bug, MTD-specific bullets/disclaimer/tagline). Save-box T2 (`leads/route.ts`) ✅ multi-market correct. Nurture cron (`lib/email-templates/`) ✅ multi-market clean |
+| Phase 1.5a — T2 post-purchase fix (47-product full coverage) | ✅ done (locked + verified + signed off) | Architecture promoted to portfolio pattern (cole-marketing/lib/ source-of-truth + sync to taxchecknow/lib/). 47 products × 2 tiers = 94 renders confirmed end-to-end. Operator visual spot-check passed May 7. Resend + Namecheap Private Email integration verified live |
+| Phase 3 — 5 /stories/ pages live (G5 → H1 → J3) | ⬜ Day 2 | Begins after operator commits Phase 1.5a output. Top-5 fear-number products targeted. Audit existing G5 implementation in cluster-worldwide/taxchecknow/ before invoking |
+| End-of-Day-1 housekeeping | ✅ in progress (this update) | OPERATIONAL-STATE.md + MASTER-BUILD-SHEET.md + dashboard verify + delete throwaway files + stage commits |
+
+**Day 1 wraps:** All 4 phases (0/1/2/1.5a) closed + signed off. Phase 3 deferred to Day 2 per operator decision (Phase 1.5a full-coverage authoring consumed Day 1 budget; quality > speed). Day 2 starts with operator commit + Phase 3 kickoff.
+
+**Discoveries surfaced Day 1 (logged in OPERATIONAL-STATE.md, items 1-23):** scheduled-publisher silent skipping was correct behaviour for stale X+Reddit calendar rows (root cause: those platforms have no platform_accounts row); `parent_job_id` already exists in content_jobs from earlier sprint (Block 5 C1 partially shipped); Save-box CTA state bug — clicking the email's "Get the full plan →" lands on calculator page with no inputs preserved (Surface 1 round-trip bug, Day 2 investigation TBD); 26 nomad/cross-border products lack PRODUCT_DEADLINES (mostly correct — no fixed dates); UK + NZ orphan routes (block-7 reconciliation); residency-risk-index uses `/nomad` homepage URL (handled via special case in getMarketContext).
+
+**Day 1 commit boundary held:** Zero git commits, zero Vercel deploys today. All edits local pending operator commit Day 2 morning.
+
+---
+
 ## STATUS LEGEND
 
 - ⬜ Not started
@@ -288,5 +312,5 @@ These run alongside Claude builds. Tick off as completed. Doesn't affect sequenc
 
 ---
 
-**Document version:** 1.0
-**Last updated:** May 4 2026 (sprint start)
+**Document version:** 1.1
+**Last updated:** May 7 2026 (Day 1 close-out — Phase 1.5a signed off)
