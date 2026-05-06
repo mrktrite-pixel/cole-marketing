@@ -1,0 +1,254 @@
+// ── COLE Email Service ───────────────────────────────────────────────────
+// Renderer + Resend wrapper for the post-purchase transactional delivery
+// email (T2). Pure rendering — no business logic, no constants, no
+// resolvers. All dynamic context is precomputed and passed in via
+// DeliveryEmailParams (see email-types.ts).
+//
+// Multi-market by design:
+//   buildHtml() reads ALL chrome from `DeliveryEmailParams` — header,
+//   banner, bullets, next-step copy, tagline, disclaimer authority,
+//   footer, CTA URL, CTA label. Zero hardcoded jurisdiction strings.
+//
+//   The webhook's getMarketContext() resolver (lib/email-context.ts)
+//   produces the full param set from DELIVERY_MAP + PRODUCT_DEADLINES
+//   + AUTHORITY_DETAILS + email-product-copy. cole-email.ts is purely a
+//   renderer + Resend wrapper.
+//
+//   Every field has a sensible default behaviour (deadline banner
+//   omitted when no deadline; per-tier bullets/copy when no per-product
+//   override). The email always renders coherently regardless of how
+//   complete the per-product data is.
+
+import type { DeliveryEmailParams } from "./email-types";
+
+// ── HELPERS ──────────────────────────────────────────────────────────────
+
+/** Days remaining until ISO date. Floor at 0. */
+function daysUntil(iso: string): number {
+  return Math.max(0, Math.floor(
+    (new Date(iso).getTime() - Date.now()) / 86_400_000
+  ));
+}
+
+/**
+ * Strip a leading "Your " from a product name so we can re-prefix without
+ * the double-prefix bug (e.g. "Your Div 296 Decision Pack" + lowercase
+ * → "your div 296 decision pack" → "Your your div 296 decision pack").
+ *
+ * Returns the lowercase product noun phrase, e.g. "div 296 decision pack".
+ */
+function productNounPhrase(productName: string): string {
+  const stripped = productName.replace(/^Your\s+/i, "");
+  return stripped.toLowerCase();
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/** URL/attribute-safe escape (subset of escapeHtml; kept distinct for clarity). */
+function escapeAttr(s: string): string {
+  return s.replace(/"/g, "&quot;").replace(/&/g, "&amp;");
+}
+
+// ── EMAIL TEMPLATE ───────────────────────────────────────────────────────
+
+export function buildHtml(p: DeliveryEmailParams): string {
+  // DEADLINE BANNER — only renders when both deadline fields present.
+  const deadlineBanner = (p.deadlineDate && p.deadlineLabel)
+    ? `
+    <!-- DEADLINE BANNER -->
+    <tr><td style="background:#dc2626;padding:12px 40px;">
+      <p style="margin:0;font-size:13px;color:#fff;font-weight:600;">
+        🔴 ${daysUntil(p.deadlineDate)} days to ${escapeHtml(p.deadlineLabel)}</p>
+    </td></tr>`
+    : "";
+
+  // TAGLINE — only renders when non-empty.
+  const taglineBlock = p.tagline.trim()
+    ? `
+      <!-- TAGLINE -->
+      <table cellpadding="0" cellspacing="0"
+        style="border-left:3px solid #0a0a0a;padding:0 0 0 16px;
+          margin:0 0 32px;width:100%;">
+        <tr><td>
+          <p style="margin:0;font-size:13px;color:#374151;
+            font-style:italic;line-height:1.6;">
+            "${escapeHtml(p.tagline.trim())}"</p>
+        </td></tr>
+      </table>`
+    : "";
+
+  // DISCLAIMER — jurisdiction-neutral, parameterised on authority.
+  const disclaimer = `
+<strong style="color:#6b7280;">General information only.</strong>
+This document is for general guidance only and does not constitute financial,
+tax, or legal advice. TaxCheckNow is not a regulated financial adviser.
+Always consult a qualified tax adviser or accountant before making
+financial decisions. Information is based on ${escapeHtml(p.authorityFullName)} guidance
+as of April 2026. ${escapeHtml(p.authorityUrl)} is the authoritative source for the
+matters covered in your ${escapeHtml(productNounPhrase(p.productName))}.
+Software recommendations in your documents may include affiliate links —
+we may earn a small commission at no extra cost to you.
+This does not influence our recommendations.
+`.trim();
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>${escapeHtml(p.productName)}</title>
+</head>
+<body style="margin:0;padding:0;background:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;padding:40px 20px;">
+  <tr><td align="center">
+  <table width="600" cellpadding="0" cellspacing="0"
+    style="background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e5e7eb;max-width:600px;">
+
+    <!-- HEADER -->
+    <tr><td style="background:#0a0a0a;padding:32px 40px;">
+      <p style="margin:0;font-family:monospace;font-size:11px;letter-spacing:2px;
+        text-transform:uppercase;color:#6b7280;">TaxCheckNow · ${escapeHtml(p.marketDisplayName)}</p>
+      <h1 style="margin:10px 0 0;font-size:22px;font-weight:700;color:#fff;line-height:1.3;">
+        ${escapeHtml(p.productName)}</h1>
+      <p style="margin:8px 0 0;font-size:13px;color:#9ca3af;">
+        Payment confirmed · ${escapeHtml(p.tierLabel)} · One-time</p>
+    </td></tr>
+${deadlineBanner}
+
+    <!-- BODY -->
+    <tr><td style="padding:40px;">
+
+      <p style="margin:0 0 24px;font-size:15px;color:#374151;line-height:1.7;">
+        Your ${escapeHtml(productNounPhrase(p.productName))} has been prepared based on your answers.
+        <strong>This is a personal assessment built around your circumstances —
+        not a generic resource.</strong>
+      </p>
+
+      <!-- CTA BUTTON -->
+      <table cellpadding="0" cellspacing="0" style="margin:0 0 32px;">
+        <tr><td style="background:#0a0a0a;border-radius:12px;">
+          <a href="${escapeAttr(p.successUrl)}"
+            style="display:block;padding:16px 32px;color:#fff;font-size:15px;
+              font-weight:700;text-decoration:none;">
+            ${escapeHtml(p.ctaLabel)}
+          </a>
+        </td></tr>
+      </table>
+
+      <!-- WHAT IS INCLUDED -->
+      <table cellpadding="0" cellspacing="0"
+        style="background:#f9fafb;border-radius:12px;padding:24px;
+          width:100%;margin:0 0 24px;box-sizing:border-box;">
+        <tr><td>
+          <p style="margin:0 0 12px;font-family:monospace;font-size:10px;
+            letter-spacing:2px;text-transform:uppercase;color:#9ca3af;">
+            What is included</p>
+          ${p.bullets.map(b =>
+            `<p style="margin:5px 0;font-size:14px;color:#374151;">
+              <span style="color:#10b981;">✓</span> ${escapeHtml(b)}</p>`
+          ).join("")}
+        </td></tr>
+      </table>
+
+      <!-- NEXT STEP -->
+      <table cellpadding="0" cellspacing="0"
+        style="border:1px solid #e5e7eb;border-radius:12px;padding:24px;
+          width:100%;margin:0 0 32px;box-sizing:border-box;">
+        <tr><td>
+          <p style="margin:0 0 8px;font-family:monospace;font-size:10px;
+            letter-spacing:2px;text-transform:uppercase;color:#9ca3af;">
+            Your next step</p>
+          <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;">
+            ${escapeHtml(p.nextStep)}</p>
+        </td></tr>
+      </table>
+${taglineBlock}
+
+      <!-- DISCLAIMER -->
+      <table cellpadding="0" cellspacing="0"
+        style="background:#f9fafb;border-radius:8px;padding:20px;
+          width:100%;box-sizing:border-box;">
+        <tr><td>
+          <p style="margin:0;font-size:11px;color:#9ca3af;line-height:1.7;">
+            ${disclaimer}</p>
+        </td></tr>
+      </table>
+
+    </td></tr>
+
+    <!-- FOOTER -->
+    <tr><td style="background:#f9fafb;padding:24px 40px;
+      border-top:1px solid #e5e7eb;text-align:center;">
+      <p style="margin:0;font-size:12px;color:#9ca3af;">
+        TaxCheckNow · taxchecknow.com · ${escapeHtml(p.marketDisplayName)}<br/>
+        Questions? Reply to this email.<br/>
+        <a href="https://taxchecknow.com/privacy"
+          style="color:#9ca3af;">Privacy</a> ·
+        <a href="https://taxchecknow.com/terms"
+          style="color:#9ca3af;">Terms</a>
+      </p>
+    </td></tr>
+
+  </table>
+  </td></tr>
+</table>
+</body>
+</html>`;
+}
+
+// ── SEND FUNCTION ────────────────────────────────────────────────────────
+
+export async function sendDeliveryEmail(params: DeliveryEmailParams): Promise<{
+  success: boolean;
+  resendId?: string;
+  error?: string;
+}> {
+  const resendKey = process.env.RESEND_API_KEY;
+  if (!resendKey) {
+    console.error("[cole-email] Missing RESEND_API_KEY");
+    return { success: false, error: "Missing RESEND_API_KEY" };
+  }
+
+  if (!params.successUrl) {
+    console.error("[cole-email] Missing successUrl for:", params.productKey);
+    return { success: false, error: "Missing successUrl (post-purchase target)" };
+  }
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type":  "application/json",
+        "Authorization": `Bearer ${resendKey}`,
+      },
+      body: JSON.stringify({
+        from:    "TaxCheckNow <hello@taxchecknow.com>",
+        to:      [params.to],
+        subject: params.subject,
+        html:    buildHtml(params),
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      console.error("[cole-email] Resend API error:", data);
+      return { success: false, error: data.message || "Resend error" };
+    }
+
+    console.log("[cole-email] Delivered:", data.id, "→", params.to);
+    return { success: true, resendId: data.id };
+
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Unknown error";
+    console.error("[cole-email] Fetch error:", msg);
+    return { success: false, error: msg };
+  }
+}

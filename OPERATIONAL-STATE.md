@@ -649,9 +649,378 @@ Month 3: $400-1,500 AUD profit. Month 12: $15,000-50,000. **Sales context, not a
 
 ---
 
+## MANUAL QUEEN ROLES — DAY 1 (MAY 6 2026)
+
+The COLE marketing OS architecture defines 4 Queens (per 
+LOCKED-LOOP-CLOSURE-SPEC.md Section 11 — 4-Layer Architectural 
+Evolution). Today, none of the queens are built as autonomous 
+bees. Each queen role is filled MANUALLY by either the operator 
+or by per-bee staggered crons. This section documents who plays 
+each role today, so future chats know what's automated vs 
+operator-driven.
+
+### Strategic Queen — OPERATOR
+
+**Responsibilities of role:**
+- Niche selection (which markets, which products to launch next)
+- Product approval (which calculators to build)
+- Site-level architectural decisions
+- Cross-site portfolio decisions (Block 7+ multi-site activation)
+
+**Played by today:** Operator (Matt). Decisions logged in 
+MASTER-BUILD-SHEET.md and OPERATIONAL-STATE.md.
+
+**Becomes autonomous:** Block 8+ when Strategic Queen Bee ships.
+
+---
+
+### Tactical Queen — PER-BEE STAGGERED CRONS
+
+**Responsibilities of role:**
+- Daily orchestration of which bees fire when
+- Pacing (G5 stories per day, J3 LinkedIn posts per day, N3 TikTok per week)
+- Per-platform timing optimization
+
+**Played by today:** Per-bee Vercel cron schedules running staggered:
+- G5 Story Writer: 6am AWST daily
+- J2 Strategy: 7am AWST daily
+- J3 LinkedIn Adapter: 8:15am AWST daily
+- J5 LinkedIn Publisher: 9am AWST daily
+- H1 Distribution Bee: triggered after each story creation
+- (Other crons per MASTER-BUILD-SHEET.md cron table)
+
+**Becomes autonomous:** Block 8+ when Tactical Queen Bee ships and 
+replaces standalone crons with orchestrated invocation.
+
+---
+
+### Adaptive Queen — OPERATOR (until Block 5 ships)
+
+**Responsibilities of role:**
+- Reading what's working vs failing
+- Triggering V2 experiments via Scientist Bee
+- Updating hook_matrix.composite_score based on lessons
+- Closing the loop (publish → measure → improve → republish)
+
+**Played by today:** Operator manually reviewing LinkedIn engagement, 
+deciding what to retry. Doctor Bee + Scientist Bee + B1/B2 Brokers 
+are SPEC_ONLY (built in Block 5).
+
+**Becomes autonomous:** Block 5 ships (Phase 6 of this sprint, 
+target Days 6-8).
+
+**Block 8+ further evolution:** Adaptive Queen Bee orchestrates 
+Doctor + Scientist + Brokers as managed sub-bees rather than 
+independent components.
+
+---
+
+### Cleaning Queen (Madame's Crew) — NOT ACTIVE
+
+**Responsibilities of role:**
+- Database hygiene (orphan rows, stale data)
+- File system cleanup (old previews, expired drafts)
+- Cost monitoring (Vercel function execution, Supabase usage)
+- Health checks (broken links, expired credentials)
+- Snapshot management
+
+**Played by today:** Nothing. Role is dormant.
+
+**Risk of dormancy:** Database accumulates cruft over time. 
+Mitigation: Block 5 Component 12 (multi-site readiness audit) 
+catches some hygiene issues. Beyond that, manual cleanup if/when 
+problems surface.
+
+**Becomes autonomous:** Block 9+ (Cleaning Madame Hive — K10/K20/K22 
++ Madame's Crew). Per spec, "Madame's voice = dry-butler-sarcasm" 
+(locked decision from Session 14).
+
+---
+
+## TRANSITION PLAN
+
+| Queen | Today | Block where automated |
+|---|---|---|
+| Strategic | OPERATOR | Block 8+ |
+| Tactical | Per-bee crons | Block 8+ |
+| Adaptive | OPERATOR | Block 5 (Phase 6) — partial. Block 8+ — fully managed. |
+| Cleaning | DORMANT | Block 9+ |
+
+When a queen automation ships, this section is updated to reflect 
+new reality. **Future chats reading this on Day 1 of Block 5/8/9 
+should expect to update this document** — not assume it's frozen 
+as written today.
+
+---
+
+## BRAND STRATEGY (operator-confirmed May 6 2026)
+
+taxchecknow + all 50 cluster sites use deliberate **monochrome + red urgency accent** aesthetic for AI-citation visual seamlessness. Customers arrive from AI engine citations (ChatGPT/Claude/Gemini) and the understated aesthetic provides seamless visual continuation. NOT pre-rebrand — this IS the brand. Soverella (operator dashboard, blue) and architecture-bible (color-rich) are internal-only and do NOT inform `site_context.brand_colors`. When `CONTENT-DERIVATION-SPEC.md` is drafted (Block 3 prerequisite), visual-content bees (carousels, social tiles, video thumbnails) MUST default to the monochrome+red palette per `site_context.brand_colors`, NOT pull from any internal-tool design system.
+
+---
+
+## OPERATIONAL ACKNOWLEDGMENTS — REGISTERED SITES
+
+| Site | Registered | Validation Gate | Status |
+|---|---|---|---|
+| taxchecknow | May 6 2026 | 2 ✅ / 3 ⚠️ / 1 🔴 (PASS — gaps known, not silent) | system-managed |
+
+(Future sites append here when registered.)
+
+> **Verdict notes:** 1 🔴 (Can sell — zero sales) is the existential 
+> problem the 10-day sprint solves, not a handoff blocker. 3 ⚠️ 
+> are likely the same root cause (scheduled-publisher silent skip 
+> since May 4). Phase 1 diagnoses; not blocking handoff.
+
+---
+
+## OPERATOR BOUNDARIES — SESSION B SCOPE BY SITE (canonical, locked May 7 2026)
+
+The COLE portfolio has TWO categories of sites with DIFFERENT
+Session-B scope rules. Future sessions MUST respect this distinction
+or risk overwriting operator-built work.
+
+### Category 1 — taxchecknow.com (operator's reference implementation)
+
+taxchecknow.com is the proven reference implementation. The operator
+built **Surface 3** (post-purchase delivery surface) by hand and signed
+it off. Surface 3 is OFF LIMITS to Session B work.
+
+**Surface 3 boundary** (Session B does NOT touch on taxchecknow):
+- Success page rendering (`app/[country]/check/[product]/success/{assess|plan}/page.tsx`)
+- `/api/get-assessment` endpoint and any dependents
+- The personalised-analysis content rendered to the customer post-purchase
+- The $67 / $147 inline-files delivery mechanism (per CLAUDE.md L42)
+- The 47 `cole/config/*.ts` product configs (operator-authored facts)
+
+**Session B IS free to work on for taxchecknow:**
+- Email/delivery wrappers (`lib/cole-email.ts`, `lib/email-context.ts`,
+  `lib/email-product-copy.ts`, `lib/email-types.ts`,
+  `lib/product-deadlines.ts`, `lib/email-templates/`, `app/api/cron/send-emails/`,
+  `app/api/leads/route.ts`)
+- Stripe webhook routing logic (`app/api/stripe/webhook/route.ts`)
+- Distribution chain (G5 → H1 → J3, all in soverella + lib/distribution-bee.ts)
+- Marketing surfaces (`/stories/`, `/questions/`, `/gpt/`, `/llms.txt`)
+- Sync infrastructure (`scripts/sync-cole-lib.mjs`, `scripts/sync-bee-specs.ts`)
+- All bee runner code in soverella
+
+When in doubt: ASK before touching anything in `cluster-worldwide/taxchecknow/app/`
+that's not under `app/api/cron/` or `app/api/stripe/`.
+
+### Category 2 — Future cluster sites (Block 7+)
+
+Future cluster sites (theviabilityindex, cryptochecknow, visachecknow, etc.)
+are SYSTEM-TEST targets. Session B builds them end-to-end including
+Surface 3. They validate the full COLE pipeline a-to-z. taxchecknow's
+Surface 3 is the design reference; new sites are the COLE-built proof.
+
+**Session B builds end-to-end on new sites:**
+- Calculator + free-check flow
+- Stripe checkout + tier configuration
+- Surface 3 (success page + assessment generation + personalised content)
+- Email infrastructure (mirrors taxchecknow per portfolio pattern)
+- Marketing surfaces
+- Distribution chain
+- All bee infrastructure
+- All operator dashboards
+
+The portfolio architecture (single source-of-truth in cole-marketing,
+deploy-time sync to per-site repos) makes this scalable: each new site
+gets the same email/distribution lib synced from cole-marketing, then
+authors site-specific content (per-product copy, story pages, character
+profiles) within that infrastructure.
+
+---
+
+## EMAIL ADDRESS STANDARD (canonical, locked May 7 2026)
+
+Locked customer-facing + internal email-address conventions across
+all 50 cluster sites. Confirmed working end-to-end on taxchecknow.com
+May 7 2026 via Namecheap Private Email + Resend live save-box test.
+
+### Customer-facing pattern
+
+**`hello@<site>.com`** — single canonical from-address for all
+transactional + marketing email (T2 delivery, save-box T2,
+nurture/reminder cron, future review-request emails). Locked across
+the portfolio for brand consistency + cross-site recognition.
+
+**Examples:**
+- taxchecknow.com → `hello@taxchecknow.com` (live)
+- theviabilityindex.com → `hello@theviabilityindex.com` (Block 7)
+- cryptochecknow.com → `hello@cryptochecknow.com` (future)
+
+### Internal pattern
+
+**`admin@<site>.com`** — operator-side mailbox for administrative
+correspondence (Stripe alerts, Vercel deploy notifications, domain
+registrar contact, Resend account, etc.). Not customer-facing.
+
+### Provider stack (taxchecknow proven; reference for new sites)
+
+| Layer | Provider | Status |
+|---|---|---|
+| Domain registrar | Namecheap | live |
+| Receiving (inbox) | Namecheap Private Email | live (verified May 7 — receives correctly) |
+| Sending (outbound) | Resend | live (verified May 7 — UK MTD save-box test arrived with correct HMRC chrome) |
+| MX records | Namecheap MX → Private Email server | live |
+| SPF / DKIM / DMARC | Resend-provided records added to DNS | live |
+
+### Pre-launch checklist for new sites (15 boxes)
+
+When launching any new cluster site, run through this checklist before
+the first save-box submission or Stripe purchase:
+
+- [ ] Domain registered + DNS pointed at Vercel
+- [ ] Namecheap Private Email account created for the new domain
+- [ ] `hello@<site>.com` mailbox created in Private Email
+- [ ] `admin@<site>.com` mailbox created in Private Email
+- [ ] MX records updated in Namecheap DNS to point at Private Email
+- [ ] Send a test email to `hello@<site>.com` from an external account → confirm receipt
+- [ ] Resend account has the new domain added + verified
+- [ ] SPF record added to DNS (`v=spf1 include:_spf.resend.com ~all`)
+- [ ] DKIM record added per Resend instructions
+- [ ] DMARC record added (`v=DMARC1; p=quarantine; rua=mailto:admin@<site>.com`)
+- [ ] Resend dashboard shows domain "Verified"
+- [ ] Send a test email FROM Resend (via curl or `sendDeliveryEmail` test) → confirm arrives at external account
+- [ ] Update `lib/cole-email.ts` from-address (or per-site env var if multi-site env evolves)
+- [ ] Run `scripts/test-t2-render.ts` (or successor) with a sample product → confirm render OK
+- [ ] First real save-box / purchase test → confirm round-trip works
+
+### Resend operator note
+
+Resend free tier covers 100 emails/day + 3,000/month — sufficient for
+early-stage purchase confirmations + nurture sequences but NOT for
+list-broadcast volume. When a site crosses ~50 customer transactions
+in a month, operator review of Resend tier is due (paid tier starts
+at $20/month for 50,000 emails).
+
+### What NOT to use
+
+- ❌ Gmail / Google Workspace as the customer-facing from-address
+  (deliverability + brand consistency)
+- ❌ `support@<site>.com` (reserved name; conflicts with operator's
+  intent to keep customer-facing single-channel via `hello@`)
+- ❌ `noreply@<site>.com` (anti-pattern; customers should be able to
+  reply to T2 emails for support)
+
+---
+
+## DAY 1 HOUSEKEEPING LOG — MAY 6 2026 (PARTIAL — Phases 0/1/2/1.5a complete; Phase 3 deferred to Day 2)
+
+> Phase 3 (5 /stories/ pages) deferred to Day 2 per operator decision —
+> Phase 1.5a T2 fix consumed the remaining Day 1 budget. T2 wiring now
+> multi-market correct so Day 2 can start Phase 3 with safe customer-
+> facing email path.
+
+### SHIPPED (Day 1)
+
+**Phase 0 — Site Registration + Validation Gate:**
+- **`site_context` table created** in Supabase (project `ngxuroxsabyamqcnvrei`). Block 5 Component 1 schema migration — `site_context` only, NOT the broader Block 5 schema set. Locked spec Section 3 schema applied verbatim.
+- **`taxchecknow` row INSERTed** (id `e81de933-d8a4-46ee-969d-4db4ca26c24a`) with operator-approved Path 1 values: 
+  - `default_character='gary-mitchell'`, `region='au'`, `language_style='australian'`
+  - `tone_rules` = direct/no_fluff/specific_numbers/fear_first
+  - `forbidden_phrases` = 7 phrase-specific entries (smarter than CUSTOMER-taxchecknow.md raw list — preserves "personalised report" acceptable phrase)
+  - `brand_colors` = monochrome+red (matches live taxchecknow + the 50-cluster brand strategy)
+  - `primary_cta` = 'Run your personalised tax check' (live verbatim short form + required 'personalised' qualifier)
+  - `linkedin_account_id` = `69f40768985e734bf3e81f56` (Zernio Account ID, verified May 6 from platform_accounts)
+  - `warm_up_status='live'`, `approval_required=TRUE`, `auto_approval_enabled=FALSE` (Hard Rule #10)
+- **6-check Validation Gate completed** (master prompt specified 5 checks; 6th 'Can approve before posting?' added by Session B during execution as it surfaced as a real verifiable check distinct from the other 5). 4 of 6 GREEN-ENOUGH. 2 ⚠️ items are likely the same root cause. 1 🔴 (zero sales) is the existential problem the sprint is solving.
+- **Manual Queen Roles documented** in this file (this section).
+
+**Phase 1 — Funnel Diagnostic:** Single-sentence verdict locked. Carousel Outcome A confirmed (scheduled-publisher cron path proven end-to-end at 09:00:36 UTC for AU-19 LinkedIn carousel — first ever cron-driven publish). Phase 1.5b publisher fix CANCELLED (system was working as designed; the May 1+3 LinkedIn rows were operator-driven via li-publisher direct invocation + Zernio native scheduler, not via scheduled-publisher which was a stub until May 2 23:51 UTC).
+
+**Phase 2 — T2 Email Audit:** 🔴 verdict — `lib/cole-email.ts` post-purchase email had 9 concrete defects rendered (UK-hardcoded chrome, broken CTA href, double-prefix bug, MTD-specific bullets/disclaimer/tagline). Save-box T2 (`leads/route.ts`) ✅ multi-market correct. Nurture/reminder cron (`lib/email-templates/`) ✅ multi-market clean. Only post-purchase path needed fix.
+
+**Phase 1.5a — T2 post-purchase fix (full per-product coverage for all 47 products):**
+- Architecture promoted to portfolio pattern: source-of-truth in `cole-marketing/lib/`, deploy-time sync to `cluster-worldwide/taxchecknow/lib/` via `scripts/sync-cole-lib.mjs`. Mirrors soverella's `bees-snapshot` precedent. Three sync modes: WRITE / VERIFY (default, prebuild) / SKIP (Vercel deploy without cole-marketing sibling).
+- 5 source files in `cole-marketing/lib/`: `email-types.ts` (pure types), `email-context.ts` (AUTHORITY_DETAILS for 7 authorities + getMarketContext resolver + helpers), `email-product-copy.ts` (BY_SITE Shape A registry), `product-deadlines.ts` (Option B `DeadlineEntry { date; label? }` shape, 21 entries — 16 migrated + 5 critical Pre-Step-2D additions for AU super products with rich labels), `cole-email.ts` (data-driven renderer + Resend wrapper).
+- Webhook becomes thin caller: `getMarketContext("taxchecknow", productKey, tier, session.id, delivery)` — no inline duplicates.
+- Per-product copy authored for **all 47 products** following the operator-confirmed AU-19 pattern: 5 bullets ($67) + 8 bullets ($147) + 2 nextSteps + 2 taglines per product = 17 strings × 47 products = ~800 strings authored.
+- Forbidden-phrase auto-check: ✅ 0 string-literal violations (banned words only appear in the documentation comment listing them).
+- Multi-market end-to-end render verified across 6 spot-renders (AU Div 296, AU FRCGW, UK MTD, US Section 174, Nomad Residency, CAN AMT).
+- `residency-risk-index` special case implemented: successUrl points at `/nomad?session_id=...` (homepage path) instead of `/nomad/check/.../success/...` (no such route exists for this product).
+- TypeScript clean (0 errors). Sync verified (manifest @ 2026-05-06T10:25:47Z).
+- **NO commits, NO deploys.** All work uncommitted; operator commits Day 2 morning with eyes on it.
+
+### BLOCKED
+
+Nothing currently. Day 1 closes at end of Phase 1.5a. Phase 3 (5 /stories/ pages) starts Day 2 morning after operator commits Phase 1.5a output.
+
+### SURFACED (DAY 1 DISCOVERIES)
+
+1. **scheduled-publisher silently skipping for 2+ days.** Every 15-min cron run since approximately May 4 returns `Found 2 due. Published 0. Skipped 2 (no_active_account_for_platform=2)` — despite `platform_accounts` having `taxchecknow + linkedin` row marked `is_active=true`. Last successful publishes were AU-19 May 1 + May 3. **This IS the early signal of the Phase 1 funnel verdict.**
+2. **Doctor Bee classifying nothing.** 3 days of `Grades: goat=0, strong=0, pass=0, fail=0, dead=0, null=0`. Either zero engagement (cold start, expected) or attribution gap. Same `2 skipped` pattern as scheduled-publisher — likely same root cause.
+3. **Block 5 Component 1 partially shipped.** `parent_job_id` (content_jobs) + `parent_post_id` + `content_version` (content_performance) already exist from earlier sprint work. Remaining for full Block 5 C1: `version`, `version_letter` on content_jobs; campaign_calendar approval fields (approval_status, approved_by, rejection_reason, parent_calendar_id, version, final_post_text, first_comment); lessons_learned scope/applied/applied_at.
+4. **`google_pinged=false` on every H1 distribution row.** Google Indexing API path either not wired or silently failing. IndexNow works (Bing/DuckDuckGo/Yahoo/Ecosia covered). D-task: investigate Google Indexing API auth status.
+5. **`content_jobs.indexnow_pinged` not back-written by H1.** Distribution Bee writes to `content_performance.indexnow_pinged=true` but doesn't update `content_jobs.indexnow_pinged`. Schema-level inconsistency; D-task to clarify intended convention.
+6. **46 of 47 products never H1-distributed.** Only AU-19 has been through `distribution-bee` (Apr 30 catch-up). Phase 3 (5 /stories/) starts filling this gap; volume scales in later phases.
+7. **`public.sites` table** — legacy portfolio tracker, 5 rows last touched 2026-04-13 (jurisdiction/cluster/monthly_revenue schema). Naming proximity to `public.site_context` (created Day 1). Reconcile during Block 7 multi-site activation.
+
+**Phase 1 / 2 / 1.5a additions:**
+
+8. **Carousel Outcome A (09:00:36 UTC):** scheduled-publisher cron path proven end-to-end for LinkedIn `document_carousel` format on AU-19. zernio_post_id `69fb03308ddf743e08c28034`. First ever cron-driven publish in system history.
+9. **Doctor Bee 7d window not yet hit on AU-19** — May 1 + May 3 posts will first cross 7d window May 8 + May 10. GA4 calculator_visits will populate then. Until then, content_performance metrics remain null (correct behaviour, not a gap).
+10. **2 stale calendar rows continue to skip** — X (Apr 30) + Reddit (May 3) entries skipped every 15 min because no platform_accounts row exists for those platforms. Operator decision Day 2: cancel / archive / leave.
+11. **Block 5 C1 partially shipped (already known; surfaced again during Phase 1):** `parent_job_id`, `parent_post_id`, `content_version` exist; `version`, `version_letter`, campaign_calendar approval fields, lessons_learned scope/applied/applied_at remain pending.
+12. **Phase 2 found TWO email paths labelled "T2"**: `lib/cole-email.ts` (post-purchase, 🔴 broken) vs `app/api/leads/route.ts` (Save-box, ✅ correctly multi-market built). Naming drift; the master prompt's "T2 = purchase confirmation" was correctly identified.
+13. **`DELIVERY_MAP[].driveUrl` is now dead code** — webhook + cole-email.ts no longer reference it. Cleanup opportunity.
+14. **`extract-products.ts` hardcodes absolute paths** to operator's local directory layout (`C:/Users/MATTV/...`). D-task: parameterize for portability across machines.
+15. **PRODUCTS.md generator successful — refresh worked** — 46 → 47 products, FRCGW added (au-19), generation date bumped 2026-04-29 → 2026-05-06. Generator detected only 1 fear-number fallback (au-19 via `answerBody[0]`); FEAR_OVERRIDES map should be augmented with au-19's $135,000 entry as a D-task for formalisation.
+16. **3 route-dir drift items (Block 7 reconciliation):** UK orphan `app/uk/check/hmrc-nudge-letter/` (no DELIVERY_MAP entry); NZ orphan `app/nz/check/qrops-tax-shield/` (no DELIVERY_MAP entry); Nomad `residency-risk-index` correctly uses `/nomad` homepage URL (handled via special case in getMarketContext).
+17. **5 critical AU PRODUCT_DEADLINES entries added Pre-Step-2D** with rich labels: frcgw-clearance-certificate, div296-wealth-eraser, super-death-tax-trap, super-to-trust-exit, transfer-balance-cap (all 30 June 2026 deadlines with contextual labels per operator spec).
+18. **26 PRODUCT_DEADLINES entries remain absent** — most are nomad/cross-border products that genuinely lack a fixed date; some (uk-nrls, uk-residency, us-expat-tax) may have indirect deadlines worth backfilling on Day 2 review.
+19. **Architecture promotion to portfolio pattern complete** — email logic now lives in `cole-marketing/lib/`, deploy-time sync via `scripts/sync-cole-lib.mjs` mirrors soverella's `bees-snapshot` precedent. Manifest hash drift detection prevents stale snapshots from silently shipping (prebuild fails build with clear "run sync --write and commit" instruction).
+20. **Phase 1.5a Step 3 verification (94/94 renders succeeded across all 47 products × 2 tiers).** Edge cases all confirmed: residency-risk-index special URL → `/nomad?session_id=...`; products without deadlines → banner omitted; products with rich-label deadlines → "30 June 2026 valuation date" verbatim; tier-aware CTAs ("Decision Pack" vs "Execution Plan"); no double-prefix bugs; no banned phrases in rendered HTML. Verify-script HTML-entity bug caught + fixed mid-run (decoding `&amp;` before substring match — UK products' "HM Revenue & Customs" was being seen as missing pre-fix).
+21. **D-task: when validating rendered HTML in scripts, decode HTML entities before substring-matching expected unescaped text.** Pattern surfaced during Step 3 — applies to any future render-verification script.
+22. **🔴 Save-box CTA state bug (operator-found Day 1 close-out live test).** Reproduction: `/uk/check/mtd-scorecard` → fill calculator → save email (no purchase) → email arrives with correct HMRC chrome and "Get the full plan →" CTA → click CTA → lands on calculator page with NO inputs preserved → customer must re-enter all data. Severity: **High UX friction.** Pre-existing Surface 1 save-box bug, NOT a Phase 1.5a regression — the email itself is correct; the round-trip behaviour is broken. Likely affects all 47 products' save-box flow. **Day 2 investigation scope:** `app/api/leads/route.ts` (does CTA URL include state token?), calculator page React component (does it hydrate from URL params or session_id?), Supabase `leads` / `decision_sessions` tables (what state does save-box persist?). Day 2 priority TBD by operator (vs Phase 3 sequencing).
+23. **Resend + Namecheap Private Email integration verified live** on taxchecknow.com May 7 2026. Receiving (`hello@taxchecknow.com`) confirmed; sending (Resend → external inbox with HMRC-correct chrome on UK MTD save-box test) confirmed. EMAIL ADDRESS STANDARD section above formalises this for portfolio.
+
+### OPERATOR SIGN-OFF — PHASE 1.5a (May 7 2026)
+
+Operator visual spot-check passed:
+- All 6 sample HTMLs visually correct across markets (AU / UK / US / NZ / CAN / Nomad)
+- Multi-market authority interpolation verified (ATO / HMRC / IRS / IRD / CRA / OECD)
+- CTA URLs functional (including `residency-risk-index` special-case `/nomad?session_id=...` URL)
+- No double-prefix bugs in any rendered output
+- Product-specific mechanism phrases verified — including real ATO section reference (Nomad AU expat CGT cited `s118-115(3)`)
+
+Email infrastructure verified end-to-end:
+- Namecheap Private Email receiving confirmed
+- Resend sending confirmed via real save-box live test (UK MTD email arrived with correct HMRC-themed chrome)
+
+Phase 1.5a CLOSED. Ready for operator commit Day 2 morning.
+
+### FUNNEL VERDICT
+
+**The biggest leak is empty top-of-funnel — only 2 LinkedIn publishes in 5 days (both via manual paths) produced zero customer-facing downstream activity, but as of 09:00 UTC today the cron-driven publishing path proved out (AU-19 carousel published successfully), so the unblock is no longer "fix the cron" but "scale calendar cadence + Phase 3 content seeding to fill the cron's diet."**
+
+### T2 VERDICT
+
+**🔴 → 🟢 (resolved Day 1).** Pre-fix: post-purchase T2 email had 9 concrete defects (UK-hardcoded chrome, broken CTA href, wrong jurisdiction in disclaimer, double-prefix bug). 0 purchases in `purchases` table meant no customer was burned, but Phase 3 driving the first real sale would have shipped the broken email. Post-fix: Phase 1.5a delivered multi-market correct, data-driven email rendering across all 47 products with end-to-end verification on 6 sample renders spanning AU/UK/US/CAN/Nomad. Architecture is now portfolio-ready (BY_SITE Shape A) for Block 7 site #2. Operator commits Day 2 morning + first real customer purchase will receive the correct email.
+
+### TOMORROW (DAY 2)
+
+**Priority order for Day 2:**
+
+1. **Operator review + commit Phase 1.5a output** (~2-3h) — review ~800 strings, sign off, commit cole-marketing/lib/ + cluster-worldwide/taxchecknow/lib/synced + webhook changes. This unlocks Phase 3 to ship safely.
+2. **Phase 3 — 5 /stories/ pages** (~3h) — top-5 fear-number products. Audit existing G5 implementation in cluster-worldwide/taxchecknow/ before invoking. Drive H1 distribution. J3 LinkedIn drafts to calendar.
+3. **Day-2 cadence question:** with cron-driven publishing proven (Outcome A), how many calendar rows should each new story generate over the next 14 days? Operator's answer determines whether 5 stories produce ~5 LinkedIn posts (sparse) or ~25-35 (sustained).
+4. **Optional Day 2 cleanup:** 2 stale X+Reddit calendar rows (cancel/archive); FEAR_OVERRIDES backfill for au-19 in extract-products.ts; Google Indexing API investigation; assess whether the 26 nomad PRODUCT_DEADLINES entries need backfilling.
+
+---
+
 # 📝 WHAT CHANGED LOG
 
 Append-only log of edits to this file.
+
+## May 6 2026 — Day 1 site registration + manual queen roles + brand strategy + partial Day 1 housekeeping
+
+- New section: "MANUAL QUEEN ROLES — DAY 1 (MAY 6 2026)" — documents the 4 manual queen roles and transition plan to autonomy across Block 5/8/9
+- New section: "BRAND STRATEGY (operator-confirmed May 6 2026)" — elevated from Day 1 housekeeping draft to its own canonical reference section per operator adjustment A
+- New section: "DAY 1 HOUSEKEEPING LOG — MAY 6 2026 (PARTIAL — Phase 0 complete)" — captures Phase 0 shipped/blocked/surfaced/funnel/T2/tomorrow per master prompt format. Full update at end-of-day.
+- Phase 0 outcomes: site_context table created in Supabase (project ngxuroxsabyamqcnvrei), taxchecknow row INSERTed (id e81de933-d8a4-46ee-969d-4db4ca26c24a), 6-check Validation Gate passed
+- 7 discoveries surfaced via Validation Gate (scheduled-publisher silent skip, Doctor zero classification, Block 5 C1 partial, google_pinged false, content_jobs.indexnow_pinged not back-written, 46/47 products undistributed, public.sites legacy)
 
 ## May 4 2026 — Chat A's design doc integrated (after first creation)
 

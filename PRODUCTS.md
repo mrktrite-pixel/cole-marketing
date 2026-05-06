@@ -1,12 +1,12 @@
 # COLE Products
 
-Generated from cole/config/*.ts on 2026-04-29.
-Total products: 46
+Generated from cole/config/*.ts on 2026-05-06.
+Total products: 47
 Fear numbers sourced from cole-marketing/CHARACTERS.md.
 
 ---
 
-## AUSTRALIA (15)
+## AUSTRALIA (16)
 
 ### au_67_cgt_main_residence_trap | CGT Main Residence Trap Engine
   Fear: $47,000 — Is your home sale tax-free in Australia? Not always.
@@ -97,6 +97,12 @@ Fear numbers sourced from cole-marketing/CHARACTERS.md.
   URL:  /au/check/transfer-balance-cap
   Auth: ATO
   Char: Gary (Andrew Chen for super-specific framing)
+
+### au_67_frcgw_clearance_certificate | Foreign Resident CGT Withholding Clearance Certificate
+  Fear: $135,000 — Foreign Resident Capital Gains Withholding — the 1 January 2025 rule change that affects every Australian property seller
+  URL:  /au/check/frcgw-clearance-certificate
+  Auth: ATO
+  Char: Gary
 
 ---
 
