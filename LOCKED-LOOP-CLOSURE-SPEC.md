@@ -45,7 +45,8 @@ taxchecknow.com is live. 47 products shipped. Product 48 (May 2026) proved the b
 | **GEO-optimized page layouts** | The schema markup + layout structure is what AI engines cite. Changing it = breaking the moat. |
 | **The "personalised report" language** | Per CUSTOMER-taxchecknow.md. Banned/acceptable framings are non-negotiable. |
 | **47 product configs** | Live in production. Each has facts file, character mapping, pricing, calculator logic. **Do not refactor without understanding what each config drives.** |
-| **`/stories/[slug]` route** | The canonical Gary-narrative story page on taxchecknow.com. 800-1200 words per product. FAQPage schema embedded. AI engines crawl these for citations. **THIS IS THE MOAT.** Format locked: fear number in first paragraph, primary CTA to `/[country]/check/[slug]`, secondary CTA to `/gpt/[slug]`, 3 internal links minimum, authority citation. SESSION-11-STATE.md confirms `/stories/gary-frcgw-clearance-trap` live. Per ROLLOUT.md C11. |
+| **Calculator page email-capture component** | Live on every `/[country]/check/[product]` page. Positioned at the inflection point — after user completes calculator inputs, before clicking primary "Get my [result]" CTA. Headline frames value for the user's professional context (e.g., "Save your SRT decision for your UK tax advisor"). Body: "Get a copy of your [outcome type] by email — free." CTA button: "Save". **DO NOT MODIFY** — operator-approved component, this is the first email-capture moment in the entire funnel. Confirmed live at `taxchecknow.com/nomad/check/uk-residency` and pattern across all calculator pages. The free email capture is the highest-leverage intent signal in the entire system — captured at peak-intent moment (work done, results imminent). All email sequences design AROUND this capture point. |
+| **`/stories/[slug]` route** | The canonical Gary-narrative story page on taxchecknow.com. 800-1200 words per product. FAQPage schema embedded. AI engines crawl these for citations. **THIS IS THE MOAT.** Format locked: fear number in first paragraph, **CTA structure: 1 PRIMARY CTA to free calculator at `/[country]/check/[slug]` (mandatory, appears after consequence section AND at end of page, visually + structurally dominant) + MAX 2 OPTIONAL SECONDARY CTAs (cross-sell related products, contextually relevant, after main resolution). Never more than 3 CTAs total. Never multiple competing primary CTAs.**, FAQPage schema, authority citation. SESSION-11-STATE.md confirms `/stories/gary-frcgw-clearance-trap` live. Per ROLLOUT.md C11. |
 | **`/questions/[slug]` route** | The 5-question companion track per product. H1 = exact question (never reworded). Direct answer in paragraph 1 (50 words). 3 calculator links embedded. FAQPage schema on every page. AI engines cite these for specific question matches. SESSION-11-STATE.md confirms 5 articles live. |
 | **`/gpt/[slug]` route** | GPT-specific landing pages. Signed-off route per ROLLOUT.md. Secondary CTA target from /stories/ pages. |
 | **`/llms.txt` infrastructure** | Returns AI-readable index of all products + stories + questions. Bots cite this. Per ROLLOUT.md: keep under 50 priority URLs, sectioned (Products / GPT / Stories / Questions). Updated by H1 Distribution Bee on every new page. |
@@ -60,31 +61,45 @@ When site #2 (theviabilityindex / cryptochecknow / visachecknow) launches, it CO
 
 G5 produces TWO things from a single research run, NOT one:
 
-**Output 1 — Permanent canonical content:**
+**Output 1 — Canonical Story Object → /stories/[slug] page:**
 - Page on taxchecknow.com at `/stories/[slug]`
 - 800-1200 word Gary narrative
 - Fear number in first paragraph
 - FAQPage schema embedded
-- Primary CTA: `/[country]/check/[slug]` (calculator)
-- Secondary CTA: `/gpt/[slug]` (GPT page)
-- 3 internal links minimum
+- **CTA structure (LOCKED):**
+  - **1 PRIMARY CTA (mandatory)** — links to core calculator at `/[country]/check/[slug]`. Appears in two positions: after the consequence section AND at end of page. Visually + structurally dominant.
+  - **MAX 2 OPTIONAL SECONDARY CTAs** — cross-sell related products only. Must be contextually relevant. Placed after main resolution. Includes `/gpt/[slug]` if used as a secondary path.
+  - **STRICT RULES:** Never more than 3 CTAs total on a story page. Never multiple competing primary CTAs. Primary must dominate.
 - Authority citation
 - Triggered by: H1 Distribution Bee → IndexNow + Google Indexing API + llms.txt update
 - **This is the MOAT.** AI engines cite this. Without it, the citation flywheel breaks.
 
-**Output 2 — Social derivative package (the path the Loop Closure spec tracks):**
-- LinkedIn post (300 words, professional) — flows through J3
-- X thread (7-10 tweets, chaos hook opener) — Q-station future
-- Instagram caption (150 words) — M-station future
-- TikTok script (60 seconds, hook in 3 words) — N-station Block 2
-- Reddit comment (200 words, no hard sell) — manual
-- Email newsletter section (100 words) — G7-station
-- Lands in `content_jobs.output_data` → flows through J2/J3 → calendar → approval → J5 publish
-- **First-comment link on every social post points back to Output 1's `/stories/[slug]` URL** — this is how social drives traffic to the moat content
+**Output 2 — Derivation Map (structured JSON, used by all adapter bees):**
 
-**Hard rule:** When G5 fires, BOTH outputs must complete or both fail. A social package without a story page is rejected (no canonical URL for first-comment link). A story page without a social package is allowed (just less distribution that day).
+The single source of structured intelligence that adapter bees consume. No adapter bee creates content from scratch — ALL adapters read this map.
 
-**Hard rule:** When the closed loop generates V2 of a social post (Scientist creates V2), V2 still links to the SAME canonical `/stories/[slug]` URL. **The URL is permanent. The content compounds.** Story content is updated by B3 Story Refresher (Block 6.5) routine path reading K12 + J6 signals, and by truth-sync engine (Block 6.7) urgent path reading product_changes. Social derivatives recycle freely; the canonical URL never changes; the content at that URL gets continuously refined as learning accumulates. **The moat anchor is permanent. The moat content compounds. The marketing around it tests and learns.**
+Required fields:
+- `linkedin_hook` — opening line for LinkedIn post (J3 reads this)
+- `linkedin_body` — main body content for LinkedIn post (J3 reads this)
+- `tiktok_3s_hook` — first 3 seconds, attention grabber (N3 reads this)
+- `tiktok_30s_script` — 30-second video script (N3 reads this)
+- `carousel_slides` — array of 5-7 slide concepts for IG/LinkedIn carousels (J3.5 + M3 read this)
+- `email_excerpt` — paragraph designated for email Output 2 (G7 family reads this)
+- `faq_questions` — array of 5-7 questions for /questions/[slug] generation (G6 reads this)
+- `reddit_question_angles` — array of question angles for Reddit derivation (manual today)
+- `x_thread_opener` — opening tweet for X/Twitter thread (Q3 reads this — future)
+
+Lands in `content_jobs.output_data.derivation_map` → flows to:
+- J3 LinkedIn Adapter → calendar → approval → J5 publish (current Block 2/5 path)
+- N3 TikTok Adapter → content_assets → manual handoff during warm-up → auto post-warm-up
+- Future: M3 Instagram, L3 YouTube, Q3 X/Twitter, G6 Article Builder, G7 Email family
+- **First-comment link on every social derivative points back to Output 1's `/stories/[slug]` URL** — this is how social drives traffic to the moat content
+
+**Discipline rule:** Derivation map stays simple JSON. No nested madness. No over-optimisation. Add fields only when an adapter bee needs them.
+
+**Hard rule:** When G5 fires, BOTH outputs must complete or both fail. A derivation map without a story page is rejected (no canonical URL for first-comment link). A story page without a derivation map is allowed (just less distribution that day).
+
+**Hard rule:** When the closed loop generates V2 of a social derivative (Scientist creates V2), V2 still links to the SAME canonical `/stories/[slug]` URL. **The URL is permanent. The content compounds.** Story content is updated by B3 Story Refresher (Block 6.5) routine path reading K12 + J6 signals, and by truth-sync engine (Block 6.7) urgent path reading product_changes. Social derivatives recycle freely; the canonical URL never changes; the content at that URL gets continuously refined as learning accumulates. **The moat anchor is permanent. The moat content compounds. The marketing around it tests and learns.**
 
 ### Voice and Character
 
@@ -175,7 +190,15 @@ It does NOT redefine:
 ## SECTION 1 — THE CORE FLOW
 
 ```
-G5 → J2 → J3 → CALENDAR (draft) → APPROVAL → J5 publish
+G5
+ ├─→ Story Object → /stories/[slug] page → H1 Distribution Bee
+ │                                              ↓
+ │                                    IndexNow + Google Indexing + llms.txt
+ │                                    (canonical moat content — AI engines cite)
+ │
+ └─→ Derivation Map (structured JSON)
+        ↓
+     J2 → J3 → CALENDAR (draft) → APPROVAL → J5 publish
                                                   ↓
                                           J7 Doctor (2h, 24h, 7d)
                                                   ↓
@@ -196,8 +219,11 @@ G5 → J2 → J3 → CALENDAR (draft) → APPROVAL → J5 publish
                                                                           ↓
                                                                     APPROVAL → J5 publish
                                                                           ↓
-                                                                    (loop continues)
+                                                                    (loop continues — V2 first-comment
+                                                                     still points to ORIGINAL /stories/ URL)
 ```
+
+**Key principle:** Story Object is the canonical moat content (permanent URL, content compounds). Derivation Map is the structured intelligence adapter bees consume to generate platform-specific content. **One story produces one canonical page + one derivation map. All distributions trace back to both.**
 
 ---
 
@@ -222,6 +248,8 @@ G5 → J2 → J3 → CALENDAR (draft) → APPROVAL → J5 publish
 9. **Cron functions are Vercel API routes.** NOT Supabase Edge Functions. Existing pattern (commit 0122eaa shipped 9 of these).
 
 10. **Auto-approval defaults to FALSE per site.** Earned by performance data, not assumed.
+
+11. **No content bee bypasses /stories/.** All adapter bees (J3, N3, M3, L3, Q3, G7 family) and all derivation bees MUST read from the canonical `/stories/[slug]` page or its source content_jobs row before composing platform-specific content. Story is the single source of narrative truth — adapter bees adapt, they do not invent. Exception: pure data-only outputs (T2 receipt confirmations, calculator results, transactional notifications) where the user's specific data IS the content. Violations = drift incident, fix card. **One narrative, many distributions, never the reverse.**
 
 ---
 
