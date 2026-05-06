@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>COLE — The Queens' Court & The Pipeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --honey: #d4a017;
+    --honey-deep: #a07810;
+    --honey-pale: #f4d678;
+    --wax: #fef3c7;
+    --parchment: #f8f1de;
+    --parchment-shadow: #e8dcc0;
+    --ink: #2a1810;
+    --ink-soft: #5d4220;
+    --royal: #5b1a35;
+    --royal-deep: #3d0e22;
+    --royal-light: #8b3a5a;
+    --moss: #4a6b3a;
+    --moss-deep: #2e4424;
+    --rust: #a83e1e;
+    --rust-deep: #6b2810;
+    --slate: #4a5566;
+    --slate-pale: #c8c8c8;
+    --bone: #f5ebd6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: 
+      radial-gradient(ellipse at 20% 10%, rgba(212,160,23,0.08), transparent 50%),
+      radial-gradient(ellipse at 80% 90%, rgba(91,26,53,0.06), transparent 50%),
+      var(--parchment);
+    background-attachment: fixed;
+    font-family: 'EB Garamond', serif;
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 60px 40px;
+    /* paper texture */
+    background-image: 
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.16 0 0 0 0 0.09 0 0 0 0 0.06 0 0 0 0.04 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+      radial-gradient(ellipse at 20% 10%, rgba(212,160,23,0.08), transparent 50%),
+      radial-gradient(ellipse at 80% 90%, rgba(91,26,53,0.06), transparent 50%);
+    background-color: var(--parchment);
+  }
+  .canvas {
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+  }
+  /* ============ TITLE ============ */
+  .titleblock {
+    text-align: center;
+    margin-bottom: 60px;
+    position: relative;
+  }
+  .titleblock::before, .titleblock::after {
+    content: '✦';
+    color: var(--honey-deep);
+    font-size: 24px;
+    margin: 0 24px;
+  }
+  .titleblock h1 {
+    font-family: 'Cinzel', serif;
+    font-weight: 800;
+    font-size: 56px;
+    letter-spacing: 0.08em;
+    color: var(--royal-deep);
+    display: inline;
+    text-shadow: 1px 1px 0 var(--parchment-shadow);
+  }
+  .titleblock .sub {
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    font-size: 22px;
+    color: var(--ink-soft);
+    margin-top: 12px;
+    letter-spacing: 0.04em;
+  }
+  .titleblock .meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--slate);
+    margin-top: 16px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  /* ============ THE COURT (Queen lanes) ============ */
+  .court {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .lane {
+    position: relative;
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    padding: 32px 40px 40px 40px;
+    margin-bottom: 0;
+    background: rgba(255, 250, 235, 0.85);
+    box-shadow: 6px 6px 0 var(--parchment-shadow), 0 0 0 1px var(--ink) inset;
+  }
+  .lane.strategic { background: linear-gradient(180deg, rgba(91,26,53,0.07), rgba(255,250,235,0.95)); }
+  .lane.tactical  { background: linear-gradient(180deg, rgba(74,107,58,0.06), rgba(255,250,235,0.95)); }
+  .lane.adaptive  { background: linear-gradient(180deg, rgba(168,62,30,0.06), rgba(255,250,235,0.95)); }
+  /* throne header */
+  .throne {
+    display: grid;
+    grid-template-columns: 110px 1fr auto;
+    gap: 24px;
+    align-items: center;
+    padding-bottom: 20px;
+    border-bottom: 1px dashed var(--ink-soft);
+    margin-bottom: 24px;
+  }
+  .throne-icon {
+    width: 110px;
+    height: 110px;
+    position: relative;
+  }
+  .throne-icon svg { width: 100%; height: 100%; }
+  .throne-titles h2 {
+    font-family: 'Cinzel', serif;
+    font-weight: 800;
+    font-size: 30px;
+    letter-spacing: 0.06em;
+    color: var(--royal-deep);
+    line-height: 1;
+  }
+  .lane.tactical .throne-titles h2 { color: var(--moss-deep); }
+  .lane.adaptive .throne-titles h2 { color: var(--rust-deep); }
+  .throne-titles .role {
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    font-size: 18px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+  .throne-titles .question {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink);
+    margin-top: 10px;
+    padding: 4px 12px;
+    background: var(--wax);
+    border: 1px solid var(--honey-deep);
+    display: inline-block;
+  }
+  .throne-meta {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--slate);
+    line-height: 1.7;
+  }
+  .throne-meta strong {
+    color: var(--ink);
+    font-size: 11px;
+  }
+  /* ============ STATIONS within a lane ============ */
+  .stations {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  .station {
+    border: 1.5px solid var(--ink);
+    background: var(--bone);
+    padding: 14px 16px;
+    position: relative;
+    box-shadow: 3px 3px 0 var(--parchment-shadow);
+  }
+  .station.live {
+    background: var(--wax);
+    border-color: var(--honey-deep);
+    border-width: 2px;
+  }
+  .station.partial {
+    background: repeating-linear-gradient(45deg, var(--bone), var(--bone) 8px, rgba(212,160,23,0.15) 8px, rgba(212,160,23,0.15) 12px);
+    border-color: var(--honey-deep);
+  }
+  .station.unbuilt {
+    background: var(--parchment);
+    border-style: dashed;
+    border-color: var(--slate);
+    opacity: 0.75;
+  }
+  .station-letter {
+    position: absolute;
+    top: -10px;
+    left: 12px;
+    background: var(--ink);
+    color: var(--parchment);
+    font-family: 'Cinzel', serif;
+    font-weight: 800;
+    font-size: 13px;
+    padding: 2px 10px;
+    letter-spacing: 0.1em;
+  }
+  .station.live .station-letter { background: var(--honey-deep); color: white; }
+  .station.partial .station-letter { background: var(--honey-deep); color: white; }
+  .station.unbuilt .station-letter { background: var(--slate); }
+  .station h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    color: var(--ink);
+    margin-top: 4px;
+  }
+  .station ul {
+    list-style: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    line-height: 1.7;
+  }
+  .station li {
+    color: var(--ink-soft);
+    padding-left: 20px;
+    position: relative;
+  }
+  .station li::before {
+    position: absolute;
+    left: 0;
+    font-size: 11px;
+  }
+  .station li.built::before { content: '🐝'; }
+  .station li.progress::before { content: '🛠'; color: var(--honey-deep); }
+  .station li.planned::before { content: '◌'; color: var(--slate); }
+  .station li.asleep::before { content: '💤'; }
+  .station li.asleep { color: var(--rust-deep); font-weight: 600; }
+  .station li.built { color: var(--ink); }
+  /* ============ HANDOVER BATON ============ */
+  .handover {
+    position: relative;
+    padding: 28px 40px;
+    margin: 0;
+    text-align: center;
+    background: transparent;
+  }
+  .baton-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 24px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .baton-trigger {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink);
+    background: var(--wax);
+    border: 1.5px solid var(--honey-deep);
+    padding: 10px 14px;
+    letter-spacing: 0.05em;
+  }
+  .baton-trigger strong {
+    display: block;
+    color: var(--honey-deep);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 4px;
+  }
+  .baton-arrow {
+    font-size: 48px;
+    color: var(--honey-deep);
+    line-height: 1;
+  }
+  .baton-status {
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+  .baton-status.dropped {
+    color: var(--rust-deep);
+    font-weight: 600;
+  }
+  /* ============ MADAME'S CYCLE ============ */
+  .madame-band {
+    margin-top: 60px;
+    padding: 32px 40px;
+    border: 2px solid var(--royal-deep);
+    background: linear-gradient(135deg, rgba(91,26,53,0.05), rgba(255,250,235,0.9));
+    box-shadow: 6px 6px 0 var(--parchment-shadow);
+    position: relative;
+  }
+  .madame-band::before {
+    content: '✦ THE NIGHT WATCH ✦';
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--parchment);
+    padding: 0 16px;
+    font-family: 'Cinzel', serif;
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--royal-deep);
+  }
+  .madame-grid {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 28px;
+    align-items: start;
+    margin-top: 12px;
+  }
+  .madame-icon { width: 110px; height: 110px; }
+  .madame-icon svg { width: 100%; height: 100%; }
+  .madame-info h2 {
+    font-family: 'Cinzel', serif;
+    font-weight: 800;
+    font-size: 26px;
+    color: var(--royal-deep);
+    margin-bottom: 4px;
+  }
+  .madame-info .role {
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    font-size: 16px;
+    color: var(--ink-soft);
+    margin-bottom: 14px;
+  }
+  .madame-quote {
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    color: var(--royal-deep);
+    font-size: 15px;
+    border-left: 3px solid var(--royal-deep);
+    padding-left: 14px;
+    margin-bottom: 14px;
+  }
+  .madame-bees {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+  }
+  .madame-bee {
+    border: 1px solid var(--royal-light);
+    background: rgba(91,26,53,0.05);
+    padding: 8px 10px;
+  }
+  .madame-bee strong {
+    color: var(--royal-deep);
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+  }
+  .madame-bee span {
+    color: var(--ink-soft);
+    font-size: 10px;
+    line-height: 1.6;
+  }
+  /* ============ FEEDBACK LOOP ============ */
+  .loopback {
+    position: relative;
+    height: 80px;
+    margin: 12px 0 0 0;
+    text-align: center;
+  }
+  .loopback svg {
+    width: 100%;
+    height: 100%;
+  }
+  .loopback-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--rust-deep);
+    background: var(--parchment);
+    padding: 4px 16px;
+    border: 1px solid var(--rust-deep);
+  }
+  /* ============ LEGEND ============ */
+  .legend {
+    margin-top: 60px;
+    border: 2px solid var(--ink);
+    padding: 28px 32px;
+    background: var(--bone);
+    box-shadow: 6px 6px 0 var(--parchment-shadow);
+  }
+  .legend h3 {
+    font-family: 'Cinzel', serif;
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: 0.1em;
+    color: var(--ink);
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--ink-soft);
+    padding-bottom: 8px;
+  }
+  .legend-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+  }
+  .legend-item {
+    font-family: 'EB Garamond', serif;
+    font-size: 14px;
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  .legend-item .icon {
+    font-family: 'JetBrains Mono', monospace;
+    margin-right: 8px;
+    font-size: 16px;
+  }
+  .legend-item strong { color: var(--royal-deep); }
+  /* ============ TODAY PANEL ============ */
+  .today {
+    margin-top: 32px;
+    border: 2px solid var(--honey-deep);
+    background: var(--wax);
+    padding: 24px 28px;
+  }
+  .today h3 {
+    font-family: 'Cinzel', serif;
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: 0.1em;
+    color: var(--honey-deep);
+    margin-bottom: 14px;
+  }
+  .today-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+  .today-item {
+    color: var(--ink);
+  }
+  .today-item strong { color: var(--ink); }
+  .today-item .ok { color: var(--moss-deep); font-weight: 600; }
+  .today-item .warn { color: var(--rust-deep); font-weight: 600; }
+  .today-item .pending { color: var(--slate); font-weight: 600; }
+  .today-item .live { color: var(--moss-deep); font-weight: 600; }
+  /* footer */
+  footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid var(--ink-soft);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--slate);
+    text-align: center;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  @media (max-width: 800px) {
+    body { padding: 30px 16px; }
+    .titleblock h1 { font-size: 36px; }
+    .stations { grid-template-columns: 1fr; }
+    .throne { grid-template-columns: 80px 1fr; gap: 16px; }
+    .throne-icon { width: 80px; height: 80px; }
+    .throne-meta { display: none; }
+    .baton-row { grid-template-columns: 1fr; gap: 12px; }
+    .baton-arrow { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+<div class="canvas">
+
+  <!-- ============ TITLE ============ -->
+  <div class="titleblock">
+    <h1>THE QUEENS' COURT</h1>
+    <div class="sub">A waterfall of decrees, batons, and bees · The COLE pipeline</div>
+    <div class="meta">VERSION May 4 2026 — by jurisdiction · top to bottom · loops back · Madame sweeps after dark</div>
+  </div>
+
+  <!-- ============ STRATEGIC QUEEN LANE ============ -->
+  <div class="court">
+    <div class="lane strategic">
+      <div class="throne">
+        <div class="throne-icon">
+          <svg viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+            <!-- throne backdrop -->
+            <rect x="20" y="40" width="70" height="55" fill="#5b1a35" stroke="#3d0e22" stroke-width="2"/>
+            <!-- throne back peaks (3 spires) -->
+            <polygon points="20,40 25,15 35,40" fill="#5b1a35" stroke="#3d0e22" stroke-width="1.5"/>
+            <polygon points="45,40 55,8 65,40" fill="#5b1a35" stroke="#3d0e22" stroke-width="1.5"/>
+            <polygon points="75,40 85,15 90,40" fill="#5b1a35" stroke="#3d0e22" stroke-width="1.5"/>
+            <!-- crown jewels on spires -->
+            <circle cx="55" cy="14" r="3" fill="#d4a017"/>
+            <circle cx="25" cy="22" r="2" fill="#d4a017"/>
+            <circle cx="85" cy="22" r="2" fill="#d4a017"/>
+            <!-- queen bee silhouette on throne -->
+            <ellipse cx="55" cy="62" rx="16" ry="14" fill="#d4a017" stroke="#2a1810" stroke-width="1.5"/>
+            <!-- wings -->
+            <ellipse cx="44" cy="55" rx="9" ry="6" fill="#fef3c7" opacity="0.7" stroke="#2a1810" stroke-width="1"/>
+            <ellipse cx="66" cy="55" rx="9" ry="6" fill="#fef3c7" opacity="0.7" stroke="#2a1810" stroke-width="1"/>
+            <!-- stripes -->
+            <path d="M 42 60 Q 55 64 68 60" stroke="#2a1810" stroke-width="2" fill="none"/>
+            <path d="M 41 67 Q 55 71 69 67" stroke="#2a1810" stroke-width="2" fill="none"/>
+            <!-- crown on bee head -->
+            <polygon points="48,46 51,40 55,44 59,40 62,46" fill="#d4a017" stroke="#2a1810" stroke-width="1"/>
+            <circle cx="55" cy="42" r="1.5" fill="#a83e1e"/>
+            <!-- antenna -->
+            <line x1="50" y1="48" x2="46" y2="42" stroke="#2a1810" stroke-width="1"/>
+            <line x1="60" y1="48" x2="64" y2="42" stroke="#2a1810" stroke-width="1"/>
+            <!-- throne base -->
+            <rect x="15" y="92" width="80" height="8" fill="#3d0e22"/>
+            <rect x="10" y="98" width="90" height="6" fill="#2a1810"/>
+          </svg>
+        </div>
+        <div class="throne-titles">
+          <h2>STRATEGIC QUEEN</h2>
+          <div class="role">Hive 1 — Research · The Architect of Opportunities</div>
+          <div class="question">"What shall we build next?"</div>
+        </div>
+        <div class="throne-meta">
+          <strong>SCHEDULE</strong><br>
+          Daily<br>
+          <strong>TOKEN</strong><br>
+          Sonnet<br>
+          <strong>READS</strong><br>
+          gap_queue · analytics
+        </div>
+      </div>
+
+      <div class="stations">
+        <div class="station unbuilt">
+          <div class="station-letter">E</div>
+          <h3>Research</h3>
+          <ul>
+            <li class="planned">E1 · Citation Gap Scanner</li>
+            <li class="planned">E2 · Market Researcher</li>
+            <li class="planned">E3 · Persona Profiler</li>
+            <li class="planned">E4 · Competitor Auditor</li>
+            <li class="planned">E5 · Keyword Intelligencer</li>
+            <li class="planned">E6 · Reddit Listener</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ HANDOVER STRATEGIC → TACTICAL ============ -->
+    <div class="handover">
+      <div class="baton-row">
+        <div class="baton-trigger">
+          <strong>SIGN-OFF SIGNAL</strong>
+          gap_queue.status='approved'<br>
+          AI gap confirmed → product brief
+        </div>
+        <div class="baton-arrow">⇩</div>
+        <div class="baton-status">
+          STRATEGIC hands the baton to TACTICAL.<br>
+          The bricklayers awake.
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ TACTICAL QUEEN LANE ============ -->
+    <div class="lane tactical">
+      <div class="throne">
+        <div class="throne-icon">
+          <svg viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+            <!-- throne backdrop (green) -->
+            <rect x="20" y="40" width="70" height="55" fill="#4a6b3a" stroke="#2e4424" stroke-width="2"/>
+            <polygon points="20,40 25,15 35,40" fill="#4a6b3a" stroke="#2e4424" stroke-width="1.5"/>
+            <polygon points="45,40 55,8 65,40" fill="#4a6b3a" stroke="#2e4424" stroke-width="1.5"/>
+            <polygon points="75,40 85,15 90,40" fill="#4a6b3a" stroke="#2e4424" stroke-width="1.5"/>
+            <circle cx="55" cy="14" r="3" fill="#d4a017"/>
+            <circle cx="25" cy="22" r="2" fill="#d4a017"/>
+            <circle cx="85" cy="22" r="2" fill="#d4a017"/>
+            <!-- bee with hammer/anvil -->
+            <ellipse cx="55" cy="62" rx="16" ry="14" fill="#d4a017" stroke="#2a1810" stroke-width="1.5"/>
+            <ellipse cx="44" cy="55" rx="9" ry="6" fill="#fef3c7" opacity="0.7" stroke="#2a1810" stroke-width="1"/>
+            <ellipse cx="66" cy="55" rx="9" ry="6" fill="#fef3c7" opacity="0.7" stroke="#2a1810" stroke-width="1"/>
+            <path d="M 42 60 Q 55 64 68 60" stroke="#2a1810" stroke-width="2" fill="none"/>
+            <path d="M 41 67 Q 55 71 69 67" stroke="#2a1810" stroke-width="2" fill="none"/>
+            <polygon points="48,46 51,40 55,44 59,40 62,46" fill="#d4a017" stroke="#2a1810" stroke-width="1"/>
+            <circle cx="55" cy="42" r="1.5" fill="#a83e1e"/>
+            <line x1="50" y1="48" x2="46" y2="42" stroke="#2a1810" stroke-width="1"/>
+            <line x1="60" y1="48" x2="64" y2="42" stroke="#2a1810" stroke-width="1"/>
+            <!-- hammer in hand -->
+            <rect x="74" y="58" width="3" height="14" fill="#2a1810"/>
+            <rect x="72" y="56" width="7" height="5" fill="#2a1810"/>
+            <rect x="15" y="92" width="80" height="8" fill="#2e4424"/>
+            <rect x="10" y="98" width="90" height="6" fill="#2a1810"/>
+          </svg>
+        </div>
+        <div class="throne-titles">
+          <h2>TACTICAL QUEEN</h2>
+          <div class="role">Hive 2 — Build · Sell · Market · The Foreman</div>
+          <div class="question">"Build it. Ship it. Tell the world."</div>
+        </div>
+        <div class="throne-meta">
+          <strong>SCHEDULE</strong><br>
+          Per-product<br>
+          <strong>TOKEN</strong><br>
+          Sonnet<br>
+          <strong>OUTPUTS</strong><br>
+          live products + posts
+        </div>
+      </div>
+
+      <div class="stations">
+        <div class="station unbuilt">
+          <div class="station-letter">F</div>
+          <h3>Product Build</h3>
+          <ul>
+            <li class="planned">F1-F6 · Calculator factory</li>
+            <li class="planned">F3b · Legal Auditor (Opus)</li>
+          </ul>
+        </div>
+        <div class="station partial">
+          <div class="station-letter">G</div>
+          <h3>Content Creation</h3>
+          <ul>
+            <li class="built">G5 · Story Writer ✓ live</li>
+            <li class="planned">G1-G4 · Idea/Brief/Hook</li>
+            <li class="planned">G6-G9 · Carousel/Image/Video</li>
+          </ul>
+        </div>
+        <div class="station unbuilt">
+          <div class="station-letter">H</div>
+          <h3>Despatch Dock</h3>
+          <ul>
+            <li class="planned">H1 · Asset Packager</li>
+            <li class="planned">H2 · Cross-platform Router</li>
+          </ul>
+        </div>
+        <div class="station partial">
+          <div class="station-letter">I</div>
+          <h3>Launch Swarm</h3>
+          <ul>
+            <li class="built">I1 · Conductor ✓ scheduler</li>
+            <li class="planned">I2 · Crisis Triage</li>
+            <li class="planned">I3 · Re-engagement</li>
+          </ul>
+        </div>
+        <div class="station live">
+          <div class="station-letter">J</div>
+          <h3>LinkedIn ✓ flowing</h3>
+          <ul>
+            <li class="built">J1.5 · Viral Templates</li>
+            <li class="built">J2 · Strategy</li>
+            <li class="built">J3 · Adapter</li>
+            <li class="planned">J4 · Manager (gate)</li>
+            <li class="built">J5 · Publisher (Zernio)</li>
+          </ul>
+        </div>
+        <div class="station partial">
+          <div class="station-letter">N</div>
+          <h3>TikTok</h3>
+          <ul>
+            <li class="progress">N1-N4 · in build</li>
+            <li class="progress">N5 · manual_handoff</li>
+            <li class="asleep">⏸ warm-up · 27d remain</li>
+          </ul>
+        </div>
+        <div class="station unbuilt">
+          <div class="station-letter">M</div>
+          <h3>Instagram</h3>
+          <ul>
+            <li class="planned">M1-M5 · spec ready</li>
+            <li class="asleep">⏸ warm-up phase</li>
+          </ul>
+        </div>
+        <div class="station unbuilt">
+          <div class="station-letter">L</div>
+          <h3>YouTube</h3>
+          <ul>
+            <li class="planned">L1-L5 (short)</li>
+            <li class="planned">L1L-L5L (long)</li>
+          </ul>
+        </div>
+        <div class="station unbuilt">
+          <div class="station-letter">Q</div>
+          <h3>X / Twitter</h3>
+          <ul>
+            <li class="planned">Q1-Q5 · threads</li>
+          </ul>
+        </div>
+        <div class="station unbuilt">
+          <div class="station-letter">O</div>
+          <h3>Reddit</h3>
+          <ul>
+            <li class="planned">O1-O3 · listen + reply</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ HANDOVER TACTICAL → ADAPTIVE ============ -->
+    <div class="handover">
+      <div class="baton-row">
+        <div class="baton-trigger">
+          <strong>SIGN-OFF SIGNAL</strong>
+          content_performance row written<br>
+          Post live · UTM tracked · clock starts
+        </div>
+        <div class="baton-arrow">⇩</div>
+        <div class="baton-status">
+          TACTICAL hands the baton to ADAPTIVE.<br>
+          Now we listen for what the world says.
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ ADAPTIVE QUEEN LANE ============ -->
+    <div class="lane adaptive">
+      <div class="throne">
+        <div class="throne-icon">
+          <svg viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+            <!-- throne (rust) -->
+            <rect x="20" y="40" width="70" height="55" fill="#a83e1e" stroke="#6b2810" stroke-width="2"/>
+            <polygon points="20,40 25,15 35,40" fill="#a83e1e" stroke="#6b2810" stroke-width="1.5"/>
+            <polygon points="45,40 55,8 65,40" fill="#a83e1e" stroke="#6b2810" stroke-width="1.5"/>
+            <polygon points="75,40 85,15 90,40" fill="#a83e1e" stroke="#6b2810" stroke-width="1.5"/>
+            <circle cx="55" cy="14" r="3" fill="#d4a017"/>
+            <circle cx="25" cy="22" r="2" fill="#d4a017"/>
+            <circle cx="85" cy="22" r="2" fill="#d4a017"/>
+            <ellipse cx="55" cy="62" rx="16" ry="14" fill="#d4a017" stroke="#2a1810" stroke-width="1.5"/>
+            <ellipse cx="44" cy="55" rx="9" ry="6" fill="#fef3c7" opacity="0.7" stroke="#2a1810" stroke-width="1"/>
+            <ellipse cx="66" cy="55" rx="9" ry="6" fill="#fef3c7" opacity="0.7" stroke="#2a1810" stroke-width="1"/>
+            <path d="M 42 60 Q 55 64 68 60" stroke="#2a1810" stroke-width="2" fill="none"/>
+            <path d="M 41 67 Q 55 71 69 67" stroke="#2a1810" stroke-width="2" fill="none"/>
+            <polygon points="48,46 51,40 55,44 59,40 62,46" fill="#d4a017" stroke="#2a1810" stroke-width="1"/>
+            <circle cx="55" cy="42" r="1.5" fill="#a83e1e"/>
+            <line x1="50" y1="48" x2="46" y2="42" stroke="#2a1810" stroke-width="1"/>
+            <line x1="60" y1="48" x2="64" y2="42" stroke="#2a1810" stroke-width="1"/>
+            <!-- magnifying glass -->
+            <circle cx="78" cy="56" r="6" fill="none" stroke="#2a1810" stroke-width="2"/>
+            <line x1="82" y1="60" x2="86" y2="64" stroke="#2a1810" stroke-width="2"/>
+            <rect x="15" y="92" width="80" height="8" fill="#6b2810"/>
+            <rect x="10" y="98" width="90" height="6" fill="#2a1810"/>
+          </svg>
+        </div>
+        <div class="throne-titles">
+          <h2>ADAPTIVE QUEEN</h2>
+          <div class="role">Hive 3 — Monitor · Improve · The Scientist</div>
+          <div class="question">"Did it work? What shall we change?"</div>
+        </div>
+        <div class="throne-meta">
+          <strong>SCHEDULE</strong><br>
+          Weekly + alerts<br>
+          <strong>TOKEN</strong><br>
+          Sonnet (+Opus on V2)<br>
+          <strong>NEEDS</strong><br>
+          ≥10 published items
+        </div>
+      </div>
+
+      <div class="stations">
+        <div class="station partial">
+          <div class="station-letter">P</div>
+          <h3>Doctor</h3>
+          <ul>
+            <li class="built">P5.5 · GA4 wrapper ✓</li>
+            <li class="planned">P5 · Doctor reader</li>
+          </ul>
+        </div>
+        <div class="station unbuilt">
+          <div class="station-letter">K</div>
+          <h3>Optimise (Hive 3)</h3>
+          <ul>
+            <li class="planned">K1 · Scientist (V2 proposer)</li>
+            <li class="planned">K9 · Review Monitor</li>
+            <li class="planned">K10 · Site Health</li>
+            <li class="planned">K20 · Link Health</li>
+            <li class="planned">K22 · Backup Verifier</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ FEEDBACK LOOP ============ -->
+  <div class="loopback">
+    <svg viewBox="0 0 1300 80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowhead-rust" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+          <polygon points="0 0, 10 5, 0 10" fill="#6b2810"/>
+        </marker>
+        <pattern id="dashpattern" width="14" height="14" patternUnits="userSpaceOnUse">
+          <path d="M 0 7 L 14 7" stroke="#a83e1e" stroke-width="2" stroke-dasharray="6,4"/>
+        </pattern>
+      </defs>
+      <!-- curve from right side back up to left side -->
+      <path d="M 1100 40 Q 1280 40 1280 -50 Q 1280 -100 600 -100 Q 50 -100 50 -50 Q 30 40 200 40"
+            stroke="#a83e1e" stroke-width="3" fill="none" stroke-dasharray="8,5" marker-end="url(#arrowhead-rust)"/>
+    </svg>
+    <div class="loopback-label">⇡ scientist_wake → Strategic ⇡</div>
+  </div>
+
+  <!-- ============ MADAME'S NIGHT WATCH ============ -->
+  <div class="madame-band">
+    <div class="madame-grid">
+      <div class="madame-icon">
+        <svg viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+          <!-- moon backdrop -->
+          <circle cx="55" cy="40" r="22" fill="#fef3c7" opacity="0.4"/>
+          <!-- broom -->
+          <line x1="20" y1="90" x2="70" y2="40" stroke="#5d4220" stroke-width="3"/>
+          <polygon points="65,38 90,30 95,55 70,55" fill="#a07810" stroke="#2a1810" stroke-width="1"/>
+          <!-- broom bristles -->
+          <line x1="68" y1="42" x2="92" y2="35" stroke="#2a1810" stroke-width="0.8"/>
+          <line x1="68" y1="46" x2="93" y2="42" stroke="#2a1810" stroke-width="0.8"/>
+          <line x1="68" y1="50" x2="93" y2="50" stroke="#2a1810" stroke-width="0.8"/>
+          <line x1="68" y1="54" x2="92" y2="58" stroke="#2a1810" stroke-width="0.8"/>
+          <!-- bee with apron -->
+          <ellipse cx="35" cy="75" rx="14" ry="12" fill="#d4a017" stroke="#2a1810" stroke-width="1.5"/>
+          <ellipse cx="26" cy="68" rx="7" ry="5" fill="#fef3c7" opacity="0.7" stroke="#2a1810" stroke-width="1"/>
+          <ellipse cx="44" cy="68" rx="7" ry="5" fill="#fef3c7" opacity="0.7" stroke="#2a1810" stroke-width="1"/>
+          <path d="M 24 75 Q 35 78 46 75" stroke="#2a1810" stroke-width="1.5" fill="none"/>
+          <path d="M 23 80 Q 35 83 47 80" stroke="#2a1810" stroke-width="1.5" fill="none"/>
+          <!-- apron -->
+          <path d="M 25 78 L 28 90 L 42 90 L 45 78" fill="#5b1a35" stroke="#2a1810" stroke-width="1"/>
+          <line x1="25" y1="78" x2="20" y2="74" stroke="#2a1810" stroke-width="0.8"/>
+          <line x1="45" y1="78" x2="50" y2="74" stroke="#2a1810" stroke-width="0.8"/>
+        </svg>
+      </div>
+      <div class="madame-info">
+        <h2>MADAME — THE CLEANING QUEEN</h2>
+        <div class="role">Hive 4 — Maintenance · Sunday 4–7am AWST · methodical, never urgent</div>
+        <div class="madame-quote">"47 PDFs swept. 230 logs archived. 0 orphans. Storage 8.4 MB. Within bounds."</div>
+        <div class="madame-bees">
+          <div class="madame-bee"><strong>K15 · Storage Sweeper</strong><span>PDFs >90d, orphans >30d</span></div>
+          <div class="madame-bee"><strong>K16 · Log Archiver</strong><span>agent_log >90d → cold</span></div>
+          <div class="madame-bee"><strong>K17 · Queue Janitor</strong><span>video_queue stale; in_progress >14d</span></div>
+          <div class="madame-bee"><strong>K21 · Cost Reporter</strong><span>weekly token spend; budget alerts</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ LEGEND ============ -->
+  <div class="legend">
+    <h3>LEGEND · HOW TO READ THE COURT</h3>
+    <div class="legend-grid">
+      <div class="legend-item"><span class="icon">🐝</span><strong>Built &amp; live</strong> — bee shipped, flowing today</div>
+      <div class="legend-item"><span class="icon">🛠</span><strong>In progress</strong> — being built this sprint</div>
+      <div class="legend-item"><span class="icon">◌</span><strong>Planned</strong> — specced, not built yet</div>
+      <div class="legend-item"><span class="icon">💤</span><strong>Asleep on the job</strong> — bee blocking flow downstream</div>
+      <div class="legend-item"><span class="icon">⏸</span><strong>Pause valve</strong> — warm-up or human gate (deliberate)</div>
+      <div class="legend-item"><span class="icon">⇩</span><strong>Sign-off baton</strong> — handover signal to next queen</div>
+      <div class="legend-item"><span class="icon">⇡</span><strong>Loop-back</strong> — Adaptive feeds Strategic next cycle</div>
+      <div class="legend-item"><span class="icon">✦</span><strong>Madame's broom</strong> — sweeps all hives Sunday night</div>
+    </div>
+  </div>
+
+  <!-- ============ TODAY PANEL ============ -->
+  <div class="today">
+    <h3>TODAY · MAY 4 2026 · WHAT IS ACTUALLY FLOWING</h3>
+    <div class="today-grid">
+      <div class="today-item"><strong>LinkedIn @taxchecknow</strong><br><span class="live">● live</span> · 1 post since May 1 · J5 publishes via Zernio</div>
+      <div class="today-item"><strong>TikTok @taxchecknow</strong><br><span class="warn">⏸ warming</span> · 27 days remain · N1-N5 in build · manual_handoff mode</div>
+      <div class="today-item"><strong>Instagram @taxchecknow</strong><br><span class="warn">⏸ warming</span> · M-station unbuilt</div>
+      <div class="today-item"><strong>YouTube · X · Reddit</strong><br><span class="pending">◌ planned</span> · L · Q · O stations unbuilt</div>
+      <div class="today-item"><strong>Hive 3 · Adaptive Queen</strong><br><span class="pending">◌ dormant</span> · needs ≥10 posts before scientist proposes V2</div>
+      <div class="today-item"><strong>Hive 4 · Madame</strong><br><span class="pending">◌ patient</span> · waits for Block 2 content to accumulate</div>
+      <div class="today-item"><strong>Strategic Queen · gap_queue</strong><br><span class="pending">◌ manual</span> · operator currently approves gaps by hand</div>
+      <div class="today-item"><strong>Block 2 progress</strong><br><span class="ok">2.0a ✓ 2.0b ✓ 2.0c 🛠</span> · ~16% of Block 2 · on pace</div>
+    </div>
+  </div>
+
+  <footer>
+    THE COURT IS A LIVING DOCUMENT · UPDATE WHEN BEES SHIP · KEEP HONEST · NO QUEEN UNATTENDED
+  </footer>
+
+</div>
+</body>
+</html>
