@@ -1115,6 +1115,50 @@ Nothing currently. Day 1 closes at end of Phase 1.5a. Phase 3 (5 /stories/ pages
 
 25. **`/api/decision-sessions` route was missing entirely** — the calculator template references it (template line 200), all 47 deployed calculators POST to it from a verdict-trigger useEffect with `.catch(() => {})` swallowing the failure. This explains the 0-rows reality of the `decision_sessions` table per Phase 1A audit. **Repaired in Step 2 of save-box β** by creating `app/api/decision-sessions/route.ts` (POST + PATCH) and `app/api/decision-sessions/[id]/route.ts` (GET-by-id). Calculator hydration on URL `?session_id=...` now functions end-to-end. Cascade implication: webhook's `generateAndStoreAssessment` was also operating on empty inputs from non-existent rows; per Chat A's clarification, customer-facing assessment generation happens via success-page direct Anthropic API call (sessionStorage-backed), so customer impact was zero, but the data-write chain was silently broken since deployment.
 
+28. **PostgREST FK embed syntax canonical.** Step 4 confirmed `decision_sessions:decision_session_id(...)` works for FK joins — auto-detected the foreign key from the ALTER TABLE. No additional config needed. Canonical pattern for future Session B work involving FK joins between Supabase tables.
+
+29. **Hardcoded time references in nurture templates.** The nurture_d3 template hardcodes "Three days ago" / "A week ago" / "Two weeks ago" rather than dynamically computing elapsed time. In production cadence (cron sends d3 row on day 3 after save) this matches reality. But edge cases break it:
+    - Operator manually re-queues an email
+    - Cron runs late (Vercel issue, holiday weekend)
+    - Customer's nurture_d3 fires on day 4 instead of day 3
+
+    Defer to Block 5/6 Copy Writer bee — that bee will regenerate all conversion-grade copy with dynamic `{{daysSinceSave}}` interpolation. Don't fix in β.
+
+30. **Re-engagement double-fire on multi-product savers (RESOLVED Step 6.1).** Step 5 smoke test surfaced: a single customer with 3 decision_sessions rows (3 different products saved on the same site) received 3 re-engagement emails. Spammy at scale — would degrade to 5 emails for a customer who saved 5 calculators. Pre-Step-6 SELECT picked one row per customer per LIMIT but the LOOP iterated by row_id, sending one email per row.
+
+    **Fix shipped in Step 6.1**: Application-level dedupe by email (Option A — chosen because PostgREST has no CTE / DISTINCT ON support and a per-site DB migration would be heavier than 8 lines of JS). Cron now:
+    - Fetches `BATCH_LIMIT * 4 = 200` candidates ORDER BY created_at DESC (most recent FIRST)
+    - Walks the array, keeps first occurrence per email (= most recent save)
+    - Caps at BATCH_LIMIT customers per run
+    - On send success: UPDATE re_engagement_sent=true on **all eligible rows for that email + window** (filter mirrors the SELECT exactly), so the customer won't be re-engaged again on a different row tomorrow
+
+    Implementation in `app/api/cron/re-engagement/route.ts`. Selection criterion: most recent save (operator pick — what they saw last is freshest in their mind).
+
+31. **Same-pattern dedupe risk in cron/send-emails (nurture).** When customer saves N products on day X, they get N nurture_d3 emails on day X+3 (one per email_queue row). Same class as Discovery #30 but different UX context.
+
+    **Defer reasoning:**
+    - Per-product nurture is arguably FEATURE, not bug (customer who saves 3 distinct products expects 3 distinct conversations). Re-engagement is different — the silent-after-30-days touchpoint where spam-feel is high.
+    - Fix is a bigger refactor (queueNurture or new schema) — would require email_queue dedupe key or queueNurture re-architecture.
+    - Block 5/6 Copy Writer bee will optimise the nurture sequence comprehensively; the dedupe decision belongs there.
+
+    **Monitoring caveat:** operator should monitor T2 + nurture send patterns once real traffic exists. If customers complain about volume per save-event, dedupe nurture as urgent fix in Block 5 (don't wait for Block 6).
+
+32. **`/api/save-email` deprecated (Step 6.2 — Day 9 deletion gate).** Audit found 1 holdout calculator (`cole/calculators/IsoAmtSniperCalculator.tsx`) and the generator template (`cole/generators/generate-calculator.ts:224`) still calling `/api/save-email`. Step 3 had migrated 46/47 calculators to `/api/leads` but missed iso-amt-sniper (different template structure — same heterogeneity that drove the Step 2 hydration variant) and never updated the generator template (so any future regenerated calculator would have regressed).
+
+    **Fix shipped in Step 6.2:**
+    - Hand-edited `IsoAmtSniperCalculator.tsx:236-250` → `/api/leads` with `verdict_status: bracketStatus` + canonical source key `iso_amt_sniper` (was `iso-amt-sniper_result`, broken — wouldn't match LEAD_PRODUCT_META)
+    - Updated `cole/generators/generate-calculator.ts:222-237` template → emits `/api/leads`, snake_case source, `verdict_status: verdict?.status`. Future-proofs all generator regenerations.
+    - Added deprecation header comment to `app/api/save-email/route.ts` — kept as graceful fallback for cached-browser sessions until Day 9 verification.
+
+    **Day 9 deletion gate:** verify `/api/save-email` had ZERO traffic in 7 days before delete. If non-zero traffic: trace to source (cached browser bundle? unaccounted-for calculator?) and fix that source — never delete the route while it's still receiving live POSTs.
+
+33. **`leads` table is vestigial.** Audit (Step 6.3) confirmed:
+    - `/api/leads/route.ts` is misnamed — it writes to `decision_sessions` + `email_queue`, NOT to `leads`
+    - The `leads` table receives ZERO writes from any production code path
+    - Single reference: `scripts/cole-analytics-snapshot.ts:41` (one-off analytics script, not in cron, not in API hot path)
+
+    **Disposition:** Document as deprecated. Do NOT issue DROP TABLE — schedule for next quarterly schema cleanup (no urgency; zero footprint cost). Update the analytics-snapshot script to either drop the leads section OR clearly mark it as reading a stale source.
+
 ### OPERATOR SIGN-OFF — PHASE 1.5a (May 7 2026)
 
 Operator visual spot-check passed:
@@ -1152,6 +1196,18 @@ Phase 1.5a CLOSED. Ready for operator commit Day 2 morning.
 # 📝 WHAT CHANGED LOG
 
 Append-only log of edits to this file.
+
+## May 7 2026 — Day 2 Step 6 close-out: 4 discoveries (#30 #31 #32 #33) + dedupe fix shipped
+
+- Discovery #30 RESOLVED — re-engagement dedupe by customer (Option A app-level dedupe, most-recent-save criterion). Fixes the day-2 smoke-test finding where a single customer with 3 decision_sessions rows received 3 re-engagement emails. PostgREST has no CTE / DISTINCT ON support so a per-site DB migration was heavier than 8 lines of JS — Option A picked.
+- Discovery #31 LOGGED + DEFERRED — same-pattern risk in cron/send-emails nurture (per-save email_queue rows fire one nurture_d3 per saved product per customer). Deferred to Block 5/6 Copy Writer bee with monitoring caveat.
+- Discovery #32 RESOLVED — `/api/save-email` deprecated. iso-amt-sniper holdout migrated to `/api/leads`, generator template updated to prevent future regression, deprecation header added to the legacy route. Day 9 deletion gate set.
+- Discovery #33 LOGGED — `leads` table is vestigial (zero production writes). Schedule for next quarterly schema cleanup; do not DROP today.
+
+## May 7 2026 — Day 2 Step 4 close-out: 2 discoveries (#28 #29) from save-box β nurture personalization
+
+- New discovery #28: PostgREST FK embed syntax canonical pattern proven via Step 4 cron embed (`decision_sessions:decision_session_id(...)` auto-detects FK relationship)
+- New discovery #29: hardcoded "Three days ago" / "A week ago" / "Two weeks ago" in nurture templates is acceptable for production cadence but breaks on manual re-queue / late cron / non-standard timing — defer dynamic `{{daysSinceSave}}` interpolation to Block 5/6 Copy Writer bee
 
 ## May 7 2026 — Day 2 Step 2 close-out: 2 new canonical sections + 2 discoveries (#24 #25)
 
