@@ -1190,6 +1190,30 @@ Nothing currently. Day 1 closes at end of Phase 1.5a. Phase 3 (5 /stories/ pages
 
     **Owner:** Block 5/6 sprint
 
+36. **`agent_log` lean schema reality (Day 3 Phase 1).** QUEEN-1-TACTICAL-MANUAL.md Section 8 example was aspirational. Live schema (probed via service-role REST call):
+    - `tokens_used`: single `integer` column (NOT `{input, output}` object)
+    - No `duration_ms` column (derive from `created_at` of consecutive rows if needed)
+    - No `trigger_source` column (encode in `result` string if relevant)
+    - Only `created_at` (no separate `started_at` / `completed_at`)
+    - `result` is `text` (no `result_detail` jsonb)
+
+    Live columns: `id, bee_name, job_id, product_key, action, result, model_used, tokens_used, cost_usd, created_at, site`.
+
+    **Canonical writer:** existing helper `soverella/lib/bee-runner/log.ts` `writeAgentLog()` already correctly handles the lean schema. Future bees + queens import + use it rather than rolling their own writers. Do NOT add a new agent_log writer for Tactical Queen.
+
+37. **`operator_gates` table stubbed in Tactical Queen Phase 4.** Per BEE-STAGE-GATES.md the table exists in spec but does not yet exist in Supabase. Building it properly requires the Soverella Approvals tab UI + per-trigger context jsonb shapes, which are dedicated build work.
+
+    **Stub behavior in Tactical Queen Phase 4:**
+    - `checkOperatorGate()` returns `{ required: false, approved: true }` always (default-approve)
+    - When called, writes one `agent_log` row per `(site, bee)` pair noting `gate_stubbed_first_run_would_require_approval` so backfill is possible when the table ships
+    - Inline `// TODO: wire BEE-STAGE-GATES.md operator_gates table` comments cross-reference the canonical spec
+
+    **De-facto V1 gate:** the Phase 5.5 first-fire operator visual review IS the gate today — operator reads observations, decides "is she signal?", approves cron autonomy. Section 6 of the manual explicitly supports this manual-trigger-as-gate path.
+
+    **Owner:** Day 5+ dedicated sprint task — full table build + Approvals tab UI + per-trigger context shapes. Run after Tactical Queen has 24-48h of production data so the Approvals tab UI has real cards to render.
+
+38. **Tactical Queen Phase 1 complete (Day 3 May 8 2026).** Schema-verify on all 5 input tables (`agent_log`, `content_jobs`, `email_queue`, `decision_sessions`, `purchases`) passed. Migration for `tactical_queen_observations` table applied — 12 columns, 2 indexes (site+severity composite + acted-on partial), RLS enabled, service-role-only policy, CHECK constraints on `observation_type` (4 values) and `severity` (3 values). Drift on `agent_log` schema vs manual surfaced (Discovery #36). Stub decision locked for `operator_gates` (Discovery #37).
+
 ### OPERATOR SIGN-OFF — PHASE 1.5a (May 7 2026)
 
 Operator visual spot-check passed:
@@ -1227,6 +1251,13 @@ Phase 1.5a CLOSED. Ready for operator commit Day 2 morning.
 # 📝 WHAT CHANGED LOG
 
 Append-only log of edits to this file.
+
+## May 8 2026 — Day 3 Block B Phase 1 close-out (Tactical Queen schema-verify + migration)
+
+- Discovery #36: `agent_log` lean schema reality — Section 8 of QUEEN-1-TACTICAL-MANUAL.md is aspirational; live schema is leaner (single `tokens_used` int, no `duration_ms`, no `trigger_source`, no started/completed_at split, no `result_detail`). Existing `soverella/lib/bee-runner/log.ts` `writeAgentLog()` is canonical writer.
+- Discovery #37: `operator_gates` table stubbed for Tactical Queen Phase 4 with default-approve + agent_log "would-have-gated-here" backfill log. Full table build deferred to Day 5+ dedicated sprint task with Soverella Approvals tab UI.
+- Discovery #38: Tactical Queen Phase 1 complete. `tactical_queen_observations` table created (12 columns, 2 indexes, RLS, CHECK constraints).
+- Phase 2 (typed observation writer) commences after this commit.
 
 ## May 7 2026 — Day 2 CLOSE-OUT (β SHIPPED LIVE)
 
