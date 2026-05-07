@@ -1159,6 +1159,37 @@ Nothing currently. Day 1 closes at end of Phase 1.5a. Phase 3 (5 /stories/ pages
 
     **Disposition:** Document as deprecated. Do NOT issue DROP TABLE — schedule for next quarterly schema cleanup (no urgency; zero footprint cost). Update the analytics-snapshot script to either drop the leads section OR clearly mark it as reading a stale source.
 
+34. **iso-amt-sniper calculator broken — post-sprint repair.** The `/us/check/iso-amt-sniper` page renders only 1 question, save-box not visible/working correctly. NOT a Step 6 bug — pre-existing condition surfaced when Step 6.2 made operator visit the page for save-email migration runtime test.
+
+    Pattern context — iso-amt-sniper triggered three special cases during Day 2:
+    - Discovery #24: template heterogeneity (newer pattern, `handleBracketSelect`-based vs standard useEffect-on-verdict)
+    - Step 3: required hand-edit (standard expansion script didn't fit)
+    - Step 6.2: required separate hand-edit for save-email migration
+    - Day 2 close-out: page UX appears broken (1 question only)
+
+    **Decision:** defer fix to **POST-10-DAY-SPRINT**. Not a Day 3-9 blocker because:
+    - Step 6.1 dedupe fix verified GREEN on standard calculator
+    - Step 6.2 code change for iso-amt-sniper is correct (just lands on a broken page)
+    - The other 46 calculators are unaffected
+    - Day 10 COLE re-run validation can either rebuild iso-amt-sniper from a unified template OR skip it
+
+    **Owner:** operator post-sprint
+    **Action items:**
+    1. Audit iso-amt-sniper questions — was it always 1 question (design) or did questions get lost at some point (bug)?
+    2. Decision: restore multi-question OR document 1-question as intentional simplified UX
+    3. Unify iso-amt-sniper template with the standard 46 OR document the divergence as permanent
+    4. Re-test save-email migration after page is functional
+
+    **BLOCK from Day 10 COLE re-run scope until investigated.**
+
+35. **Email validation on save-box submission missing.** No server-side or client-side validation that submitted email addresses are well-formed. Resend log analysis on Day 2 close-out showed accumulated "Delivery Delayed" rows for fake/typo addresses from Day 2 testing (`dedupe-test@example.com`, `reengage-test@example.com`, and `liannehasmail@gmailcom` — real-looking typo with no dot before `.com`).
+
+    At 50-site scale: real customer typos will accumulate, affecting deliverability reputation + creating orphan `decision_sessions` rows that re-engagement cron would eventually try to email.
+
+    **Defer to Block 5/6** — cheap fix (regex validation in `/api/leads` + browser-side validation in calculator save-box component).
+
+    **Owner:** Block 5/6 sprint
+
 ### OPERATOR SIGN-OFF — PHASE 1.5a (May 7 2026)
 
 Operator visual spot-check passed:
@@ -1196,6 +1227,54 @@ Phase 1.5a CLOSED. Ready for operator commit Day 2 morning.
 # 📝 WHAT CHANGED LOG
 
 Append-only log of edits to this file.
+
+## May 7 2026 — Day 2 CLOSE-OUT (β SHIPPED LIVE)
+
+Save-box conversion engine fully shipped end-to-end:
+
+- **Customer flow:** fill calculator → save-box (email) → personalised T2 email arrives with verdict + fearNumber + session_id CTA → click returns to filled calculator (hydration) → 3-step nurture sequence (D3 / D7 / D14) → re-engagement at day 7-30 if no purchase
+- **Webhook unified:** `queueReminders` now also writes `decision_session_id` for unified personalization model (save-box and post-purchase nurture share one personalization context)
+- **Schema-verify protocol locked** as canonical practice before any DB query/insert
+- **Stage-gate commit pattern locked** as canonical practice (each sub-step = one commit + rollback point)
+- **Per-customer dedupe locked** for re-engagement (Discovery #30 RESOLVED via Step 6.1 application-level dedupe)
+
+**Day 2 commits (taxchecknow):**
+- `f247896` Step 2 — decision-sessions API + 47 calc hydration
+- `9b68d39` Step 3 — save-box → email wiring (session_id + verdict_status threaded through)
+- `e09b329` Step 4 — nurture personalization (FK linkage between email_queue + decision_sessions)
+- `35f6de3` Step 5 — re-engagement separate cron (Option B locked)
+- `659131f` Step 6 — dedupe-by-customer + iso-amt-sniper save-email migration
+
+**Day 2 commits (cole-marketing):**
+- `f032843` Step 2 close-out — paid path architecture + template drift discovery + stage-gate commit pattern
+- `c512ca8` Step 6 close-out — discoveries #30-33 logged
+- (Step 7 close-out commit — this commit)
+
+**Architecture work (parallel to Session B):**
+- 4 queens manuals drafted in `cole-marketing/queens/` (QUEEN-1-TACTICAL through QUEEN-4-STRATEGIC)
+- Bee canonical definition LOCKED (10-point spec)
+- Risk tiers LOCKED (LOW / MEDIUM / HIGH)
+- Stage gate behavior LOCKED (per-tier triggers, kill switch)
+- Per-site ecosystem pattern LOCKED (no inheritance, copy/paste duplicate, operator is only cross-site intelligence)
+
+**Discoveries logged today:** #24, #25, #26, #27, #28, #29, #30, #31, #32, #33, #34, #35
+
+**Day 2 ship criteria — all met:**
+- ✅ All Day 2 work committed + pushed to `origin/main`
+- ✅ All known issues either CLOSED (Step 6 dedupe) or explicitly logged with post-sprint owner (Discovery #34, #35)
+- ✅ No deferred work hanging over Day 3 from today
+- ✅ Architecture locked, ready for Day 3 morning bee build
+- ✅ Resend log shows clean delivery on all production-path emails (9 emails delivered cleanly across Steps 3-6)
+- ✅ Per-customer dedupe shipped (no spam risk for real customers)
+- ✅ Schema-verify protocol locked as canonical
+- ✅ Stage-gate commit pattern locked as canonical
+
+**Day 3 morning agenda (NOT Day 2 work):**
+- BEE-DEFINITION.md commit (canonical bee definition)
+- BEE-STAGE-GATES.md commit (operator gate mechanics)
+- ECOSYSTEM-PATTERN.md commit (per-site replication)
+- QUEENS-ARCHITECTURE.md commit (overview)
+- Then: Tactical Queen build begins (first queen, ~3-4h)
 
 ## May 7 2026 — Day 2 Step 6 close-out: 4 discoveries (#30 #31 #32 #33) + dedupe fix shipped
 
