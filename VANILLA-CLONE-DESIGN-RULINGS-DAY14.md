@@ -125,3 +125,27 @@ Apiary Strategic Queen; **NOT** the cross-hive COLE Orchestrator. The **round-tr
 strategic.json` + `strategic-v2.json` (both schema-valid) + a registry row (placeholder `platform_accounts`),
 minted **before** any handoff for that site is claimed (else Bee A dies at `getHiveConfig`). Customer-facing
 surfaces (email, Stripe products, DNS, delivery repo, per-site env) are **emitted as a checklist**, not minted.
+
+---
+
+## 4th gap (found at Part-1 STEP-0): the v2-routines gap
+
+**The finding:** minting **`strategic-v2.json`** needs `bee_1_demand_hunter.routines` to carry niche-specific
+**structured content** — per-jurisdiction prompt text (`gemini_grounding`/`chatgpt_search` `prompts[]`) and
+community domain hosts (`serp_community`/`operator_hypothesis` `domains[]`, e.g. `community.ato.gov.au`).
+§2 supplies only **RAW MATERIAL** (`evidence.grounding_query_patterns`, `evidence.stackexchange_communities`,
+`config_overrides.domain_keywords`) — **not** the structured routine prompts/domains. This is the **v2 analogue
+of the 1a topic-seed gap**.
+
+**The RULING (same logic as 1a + GOAT honest-thin):** the clone seeds **HONEST-THIN routines mapped from the
+raw §2 evidence** — jurisdictions → v2 `jurisdictions`; `grounding_query_patterns` → routine prompt seeds;
+`stackexchange_communities` → `serp_community` domains; `domain_keywords` where they fit — satisfying
+`routines[].min(1)` with **REAL-BUT-MINIMAL** content. The clone does **NOT fabricate rich routine prompts**
+(that's the never-fabricate / fabricated-full GOAT violation). Routine **richness is grown** by Bee-1's live
+runs / the per-hive Strategic Queen / (future) Apiary §17 extraction — the **same pattern as personas**.
+
+**⚠️ CRITICAL NOTE — the round-trip (Part 4) does NOT test this.** The round-trip diffs **overlay STRUCTURE**
+(it proves the clone mints schema-valid files); it does **not** run Bee-1 or observe demand-hunting quality.
+So *"do thin routines hunt well?"* is an **OPERATION-time quality question** (answered when Bee-1 runs on a
+minted hive) — **NOT a build blocker** and **NOT something the round-trip reveals**. (Recorded to correct an
+earlier assumption that the round-trip would surface it — it won't; it is structural-only.)
