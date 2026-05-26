@@ -661,3 +661,31 @@ The Apiary Strategic Queen is the queen that makes COLE compound. Without her, C
 She is the **growth engine** at the highest layer of the architecture. Not a marketing engine — a business-expansion engine. She tells you what new business to start, with evidence.
 
 **End of Apiary Strategic Queen design.**
+
+---
+
+## §17 — Persona extraction (required, Day-14 addition)
+
+> Added 2026-05-27 (Day 14) as part of banking the Vanilla+Clone rulings — see
+> `VANILLA-CLONE-DESIGN-RULINGS-DAY14.md` (PERSONA ruling, Option A). The §1–§16 above are the original
+> Day-13 record, unchanged; this section is a forward requirement on the Apiary Queen when she is built.
+
+When the Apiary Strategic Queen is built, one of her steps — as part of producing the `CLONE_NEW_HIVE`
+handoff — is to **EXTRACT a STARTING persona** from her niche evidence (`evidence.stackexchange_communities`,
+`evidence.top_cited_competitors`, `proposed_persona_seeds`) and **author it into the character surface, in
+the SHAPE that surface requires**. The per-hive Strategic Queen then **REFINES** the persona post-launch from
+real customer voice.
+
+This resolves the persona **chicken-and-egg for future hives**: the starting persona comes from the **Apiary
+layer's pre-clone research**, NOT from the new hive's not-yet-run Strategic Queen. (The Clone workflow itself
+does NOT generate personas — it references existing ones for taxchecknow and emits a checklist item for new
+hives; persona *generation* is this Apiary capability.)
+
+### ⚠️ CONSTRAINT (verified — Vanilla+Clone probe 1c-A)
+
+The character "registry" is **TODAY a hardcoded TS module** (`lib/bees/_character-registry.ts`) sourced from
+`cole-marketing/CHARACTERS.md` — **NOT a writable table**. So this persona-extraction step must either
+**author the TS/markdown directly**, **OR** depend on a **WRITABLE CHARACTER SURFACE being built first**.
+Resolve that constraint when the Apiary Queen is built.
+
+**Flagged follow-up:** a writable character surface — **trigger: when the Apiary persona-step is built.**
