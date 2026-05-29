@@ -8,3 +8,6 @@ node_modules/
 .vscode/
 .idea/
 .claude/settings.local.json
+
+# Windows shortcuts (local-only, never commit)
+*.lnk
