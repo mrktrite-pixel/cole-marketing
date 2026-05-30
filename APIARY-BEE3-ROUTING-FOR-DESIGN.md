@@ -1,245 +1,275 @@
-# Apiary Bee 3 (Niche Router) — Brief for Design
+# Apiary Bee 3 (Niche Router) — Full Design for Design Chat
 
-**Status:** OPEN — awaiting Design ruling. Blocks the Bee 3 build.
-**Date:** 2026-05-30.
+**Status:** OPEN — full design, ready for Design ruling (workflow step 2).
+**Date:** 2026-05-30. Supersedes the earlier short brief of the same name.
 **Intended home:** `cole-marketing/APIARY-BEE3-ROUTING-FOR-DESIGN.md`
-**Authors note:** Strategy chat. Verified against per-hive `bee-3-site-auditor.md`,
-DESIGN-DAY13 §6/§13, AS-BUILT §3.3/§10–§22, the architecture brief, and live DB
-probes (Session A, 2026-05-30). Recommendations lean cheap + reversible + mirror
-the house pattern; Design to confirm or redirect.
+**Lineage:** verified against per-hive `bee-3-site-auditor.md`, DESIGN-DAY13
+§6/§13, AS-BUILT §3.3/§10–§23, the architecture brief, the Mint-Hive +
+Monitor dashboard screens, live DB probes (Session A, 2026-05-30), and the
+operator's jurisdiction-grained boundary ruling (2026-05-30, this session).
+
+**Workflow:** (1) this design → (2) Design chat rules → (3) build → (4) test →
+(5) document. This doc is the step-1 artifact.
 
 ---
 
-## 1. The decision in one line
+## 1. One line
 
-Build apiary Bee 3 as a **mirror of per-hive Bee 3's router skeleton**, with the
-decision *semantics* and the fit-check *mechanism* swapped for apiary's niche→hive
-scope. This is the same relationship apiary Bee 2 had to per-hive Bee 2 (§13:
-"same shape, different scope"). Most of the prior "is this even a mirror?" debate
-was a definitional confusion between skeleton (mirrors) and semantics (differ);
-§13 resolves it — it is a mirror at the skeleton level.
+Apiary Bee 3 is a **router**: mirror of per-hive Bee 3's skeleton, lifted to the
+niche→hive scope. It reads scored-undecided niche candidates, gates on an 8.0
+threshold, then makes ONE non-grounded Haiku fit-check against the existing-hive
+inventory, and writes `CLONE_NEW_HIVE` / `EXPAND_EXISTING` / `IGNORE` back to the
+row. Bee 4 consumes the decision. Bee 3 produces no proposal content.
 
----
+## 2. Confirmed end-to-end flow (screenshots + spec reconciled)
 
-## 2. What is already settled (NOT Design questions — listed so they are not re-opened)
+| Decision | Means | Downstream consumer |
+|---|---|---|
+| `CLONE_NEW_HIVE` | different business domain — no existing hive fits | Bee 4 writes §2 CloneProposal → **Mint Hive** screen → gated live-commit writes `overlays/<site>/` + seeds registry (Fork-3-proven, taxchecknow round-trip) |
+| `EXPAND_EXISTING` | same domain, **new jurisdiction** (or a domain sub-topic the hive doesn't cover) | Bee 4 writes expansion handoff → the existing hive's Strategic Queen (live-vs-dormant: see §12) |
+| `IGNORE` | below threshold (watching) OR fuzzy-claimed (topic already inside a claimed jurisdiction) | stays in `apiary_niche_candidates` for re-evaluation; surfaced in the apiary Strategic Queen panel (Monitor → SITE=apiary) |
+
+Apiary is itself a vanilla COLE site at the queen layer (`overlays/apiary/`); the
+flavoured content hives (taxchecknow today) are vanilla + flavour overlay. Apiary's
+Strategic Queen is selectable via the Monitor SITE dropdown above the per-hive queens.
+
+## 3. The suppression ↔ EXPAND boundary (operator-ruled 2026-05-30 — jurisdiction-grained)
+
+The dividing principle, grounded in §13 ("per-hive scouts find topics *within* a
+domain; apiary finds *new domains*; they never overlap in scope"):
+
+- **Topic inside a hive's CLAIMED jurisdiction** (e.g. "UK MTD deadline" when
+  taxchecknow already covers UK tax) → taxchecknow's own Strategic Queen finds it →
+  apiary must NOT act. Coarse cases are suppressed upstream by Bee 1; fuzzy cases
+  that slip past land here → **IGNORE (existing_hive_satisfies)**. This IS the fuzzy
+  claimed-niche suppression AS-BUILT §3.3 deferred to Bee 3.
+- **Same domain, NEW jurisdiction** (e.g. "US tax" when taxchecknow is UK+AU) →
+  a domain-entry decision the per-hive queen can't make for herself → **EXPAND_EXISTING**.
+- **Different domain** (e.g. "immigration visas") → **CLONE_NEW_HIVE**.
+
+The one-sentence test: *"Is this something the existing hive's own queen would
+already find, or an entry decision she can't make for herself?"* First → IGNORE;
+second → EXPAND. This makes apiary neither blind to claimed domains nor duplicative
+of per-hive topic hunting.
+
+**Dependency flag (not a Bee 3 design change):** EXPAND is only *reachable* if
+Bee 1's claimed-niche suppression is jurisdiction-grained — i.e. it claims "UK tax"
+without also suppressing "US tax." If `claim_radius_keywords` is domain-level only,
+new-jurisdiction niches get suppressed before Bee 3 and EXPAND can never fire.
+Confirm at build (Session A probe, §11).
+
+**Documented expectation — EXPAND likely dormant for tax in v1 (Design-ratified
+2026-05-30, NOT a design change):** taxchecknow's `primary_authorities` span FIVE
+jurisdictions (ATO/HMRC/IRS/IRD-NZ/CRA = AU/UK/US/NZ/CA), so most tax jurisdictions
+are already claimed → tax niches resolve to IGNORE_CLAIMED or (for different domains)
+CLONE, and EXPAND will rarely fire in the single-hive present. This is **correct
+dormancy**, the same shape as per-hive Bee 3's dormant panelbeat triggers — the bee
+emits the right verdict even when the verdict is "nothing to expand here." Bee 3's
+**primary live work in v1 is the IGNORE_CLAIMED vs CLONE_NEW_HIVE cut** ("already
+covered, stop scanning" vs "genuinely new domain"), which is half the apiary's job.
+EXPAND becomes load-bearing at hive #2, whose claim radius will be narrower. The
+exact breadth (and therefore whether *any* real tax EXPAND fixture exists) depends
+on the verbatim `claim_radius_keywords` — pending the Session A probe; do not infer.
+
+## 4. Settled foundations (do NOT re-open — listed so Design doesn't re-litigate)
 
 | Item | Settled value | Authority |
 |---|---|---|
-| Framing | Same router skeleton as per-hive Bee 3, one scope up | DESIGN §13 |
-| Decision enum (runtime) | `CLONE_NEW_HIVE` / `EXPAND_EXISTING` / `IGNORE` | DB CHECK `apiary_nc_decision_chk` (foundation migration L147) |
-| Fit-check mechanism | LLM-assisted **semantic match**, NOT cosine embeddings | DESIGN §6 step 2; AS-BUILT §22 L451 |
-| "Tax-seed embedder leak" | **Moot** — apiary copies no product-embedder; there is nothing to inherit | follows from the line above |
-| Threshold | `overall_score >= 8.0`; first-fire all-IGNORE/watching is **intended**, do NOT temp-lower | DESIGN §6 step 1; AS-BUILT §21 L416 |
+| Framing | same router skeleton as per-hive Bee 3, one scope up | DESIGN §13 |
+| Decision enum (runtime) | `CLONE_NEW_HIVE` / `EXPAND_EXISTING` / `IGNORE` | DB CHECK `apiary_nc_decision_chk` (foundation L147) |
+| Fit-check mechanism | LLM semantic match, NOT cosine embeddings | DESIGN §6 step 2; AS-BUILT §22 |
+| "Tax-seed embedder leak" | moot — apiary copies no embedder | follows from above |
+| Threshold | `overall_score >= 8.0`; first-fire all-IGNORE/watching is intended | DESIGN §6 step 1; AS-BUILT §21 L416 |
 | Default-bias | CLONE when in doubt | DESIGN §6 critique; AS-BUILT §22 L452 |
-| Routing-not-scoring | Bee 3 computes **no** new scoring signal; consumes Bee 2 outputs only | AS-BUILT §17 L305, §22 L453 |
-| Fuzzy claimed-niche suppression | IS the EXPAND-vs-CLONE fork itself, not a separate job | AS-BUILT §3.3 L70 |
-| Panelbeat triggers | Dropped — per-hive concept, not apiary's | architecture brief column map |
-| Grounding gate for the fit-check | NO grounding — durable taxonomic judgment uses plain Haiku | DESIGN §18 Fork 3 (per-dimension gate) |
-| Config home | Hardcoded module constants, not overlay (mirror Bee 2 / per-hive Bee 3) | AS-BUILT §11; per-hive Bee 3 spec L101–109 |
-| Input contract | Fully pinned | AS-BUILT §22 |
+| Routing-not-scoring | Bee 3 computes NO new scoring; consumes Bee 2 outputs only | AS-BUILT §17 L305, §22 L453 |
+| Grounding gate | NO grounding — durable taxonomic judgment uses plain Haiku | DESIGN §18 Fork 3 |
+| Config | hardcoded module constants, not overlay | AS-BUILT §11; per-hive Bee 3 L101–109 |
+| No new table / no panelbeat triggers | confirmed | architecture brief; Session A |
 
----
+## 5. Input contract (AS-BUILT §22)
 
-## 3. Input contract (from AS-BUILT §22 — reproduced for Design's convenience)
-
-Bee 3 reads `apiary_niche_candidates WHERE scored_at IS NOT NULL AND decided_at IS NULL`.
-
-**Available per row:** `overall_score`; `score_components.{ai_citation_volume,
-ai_citation_velocity (inert 5.0), personalisation_potential, authority_clarity,
-competitor_weakness, urgency, regulatory_stability}`; `_meta.{regulatory_stability_grounded,
+Reads `apiary_niche_candidates WHERE scored_at IS NOT NULL AND decided_at IS NULL`.
+Available: `overall_score`; `score_components.{ai_citation_volume, ai_citation_velocity
+(inert 5.0), personalisation_potential, authority_clarity, competitor_weakness,
+urgency, regulatory_stability}`; `_meta.{regulatory_stability_grounded,
 regulatory_stability_reasoning, haiku_reasoning}`; `confidence`; `recurrence_count`;
 `niche_label`; `jurisdiction`; `suppressed`; `blacklist_blocked`.
+**Deferred — must NOT compute:** `cost_to_clone`, `market_size_signal`,
+`citation_gap_density`, `personalisation_density`.
 
-**Deferred — Bee 3 does NOT get these (and must not compute them):** `cost_to_clone`,
-`market_size_signal`, `citation_gap_density`, `personalisation_density`.
+Comparison target = existing-hive inventory (today: one live hive, `taxchecknow`;
+no DB hive-registry — filesystem overlays are source of truth). Zero-hive state →
+every above-threshold niche legitimately CLONEs (data-driven, mirrors per-hive's
+empty-embeddings→BUILD_NEW).
 
-**The comparison target for the fit-check** is the existing-hive inventory — today
-exactly **one** live content hive (`taxchecknow`); `apiary` is the queen-layer
-overlay, not a content hive. There is **no DB hive-registry table** (Session A
-probe); the source of truth is the filesystem overlays. Consequence: with one
-hive, almost every niche is different-domain → CLONE-by-default, and EXPAND is the
-rare case (a tax-domain niche in a new jurisdiction). This mirrors per-hive Bee 3's
-day-one all-fallback behaviour (empty embeddings → all BUILD_NEW).
-
----
-
-## 4. The decision flow (proposed — mirror of per-hive, semantics swapped)
+## 6. Decision flow
 
 ```
-[scored, undecided niche candidate]
+[scored, undecided candidate]
         │
         ▼
-overall_score < 8.0 ?  ── YES ──►  IGNORE (watching)
-        │                          decision='IGNORE'
-        NO                         decision_reason='below_threshold (watching) — overall=<x> < 8.0'
-        │                          (kept in table for re-evaluation; no new table)
+overall_score < 8.0 ? ── YES ──► IGNORE  (decision_reason: 'below_threshold_watching: overall=<x>')
+        │
+        NO
         ▼
-Fit-within-existing-hive check  (single Haiku call, NO grounding)
-prompt: "Given niche <label + evidence + jurisdiction> and existing hive
-         <hive name + domain description>, should this be added to the hive
-         as a jurisdiction/topic expansion, or is it different enough to
-         warrant its own hive?"  → {verdict, target_hive?, reasoning}
+existing-hive inventory empty ? ── YES ──► CLONE_NEW_HIVE  (data-driven; nothing to expand into)
         │
-   ┌────┴─────────────────────────┐
-   │ fits an existing hive        │ different domain / no fit
-   ▼                              ▼
-EXPAND_EXISTING                 CLONE_NEW_HIVE
-existing_hive=<hive>            existing_hive=NULL
-decision_reason=<why>          decision_reason=<why>
+        NO
+        ▼
+fit-check (single Haiku, no grounding)  → {verdict, target_hive, new_jurisdiction, confidence, reasoning}
         │
-   (ambiguous band: "maybe EXPAND maybe CLONE" → default CLONE, flag for operator)
+        ├─ verdict EXPAND_EXISTING      → EXPAND_EXISTING; existing_hive=target_hive
+        │                                 decision_reason='expand: <new jurisdiction / sub-topic> of <hive>'
+        ├─ verdict CLONE_NEW_HIVE       → CLONE_NEW_HIVE; existing_hive=NULL
+        │                                 decision_reason='clone: different domain — <why>'
+        ├─ verdict IGNORE_CLAIMED       → IGNORE
+        │                                 decision_reason='existing_hive_satisfies: <hive> already covers <jurisdiction>'
+        └─ verdict AMBIGUOUS            → CLONE_NEW_HIVE  (default-bias §6)
+                                          decision_reason='ambiguous_operator_review: <why> — defaulted CLONE'
 ```
 
-Bee 4 later reads decided rows and composes `apiary_strategic_handoffs` (§7).
-Bee 3 writes **only** `decided_at`, `decision`, `decision_reason`, and
-`existing_hive` (on EXPAND). It produces no proposal content — "whoever made it
-owns it"; Bee 4 owns the handoff.
+On fit-check **call failure** (LLM error / unparseable JSON): write NOTHING
+(`decided_at` stays NULL → auto-retried next fire), log via `error-capture`.
+Never auto-CLONE on failure (asymmetric reversibility — CLONE is the expensive
+action; a transient error must not mint an expensive proposal). Distinguish this
+from the zero-hive data condition above, which is a legitimate CLONE.
 
----
+## 7. The fit-check call (the load-bearing creative element)
 
-## 5. Design questions (5)
+**Model:** Haiku via `callClaude` (per-hive's durable-dimension pattern; no
+grounding per §18 Fork 3). One call per candidate.
 
-### Q1 — Reconcile `EXPAND_EXISTING` vs `EXPAND_EXISTING_HIVE`
+**Prompt — calibration-aware (per §20: framing must discriminate, not prime a
+verdict).** Neutral classification, explicit criteria, conservative-merge instruction:
 
-The literal disagrees across surfaces:
+> **System:** "You classify whether a discovered business niche belongs inside an
+> existing business hive or warrants a new one. You decide business-domain
+> boundaries, not topic relevance or quality. Be conservative about merging: call
+> EXPAND only when the niche is genuinely the same business domain as a listed
+> hive and differs by a jurisdiction that hive does not yet claim. A topic already
+> inside a hive's claimed jurisdiction is that hive's own concern — return
+> IGNORE_CLAIMED. When genuinely undecided between EXPAND and CLONE, return
+> AMBIGUOUS. Output JSON only."
+>
+> **User:** "CANDIDATE — niche: {niche_label}; jurisdiction: {jurisdiction};
+> detected topics: {short evidence digest}. EXISTING HIVES — for each hive present
+> its boundary as THREE distinct labelled fields (do NOT blend into prose):
+>   • Claimed terms: {site_meta.niche.claim_radius_keywords}
+>   • Claimed jurisdictions: {site_meta.niche.primary_authorities}
+>   • Explicit exclusions: {site_meta.niche.explicit_exclusions}
+> Decide ONE verdict: EXPAND_EXISTING | CLONE_NEW_HIVE | IGNORE_CLAIMED | AMBIGUOUS.
+> Return: {\"verdict\":..., \"target_hive\": <name|null>, \"new_jurisdiction\": <bool>,
+> \"confidence\": 0.0-1.0, \"reasoning\": \"<one sentence>\"}"
 
-| Surface | Literal | Location |
-|---|---|---|
-| DB CHECK (candidates + handoffs) + partial index | `EXPAND_EXISTING` | foundation migration L147 / L79 / L172 |
-| DESIGN §6 (intent) | `EXPAND_EXISTING_HIVE` | DESIGN-DAY13 §6 |
-| TS type union | `EXPAND_EXISTING_HIVE` | `lib/clone/clone-types.ts:23` |
+**Hive-boundary source (Design-ratified 2026-05-30, path (b)):** the overlay carries
+NO readable domain-description field (Session A probe). Bee 3 reads the hive's
+boundary directly from the three `site_meta.niche` arrays in
+`overlays/<hive>/strategic.json` — the structured source of truth, not a drift-prone
+prose summary. The three arrays are kept as **three labelled prompt fields** so Haiku
+treats them as distinct signals: keywords = domain signal, authorities = jurisdiction
+signal, exclusions = **negative** signal (the most decision-useful field — e.g.
+taxchecknow's `explicit_exclusions` listing "immigration scope" resolves the
+immigration-visas niche to CLONE with no guesswork). Zero schema change, zero
+per-hive authoring burden, automatic for every future hive that meets Bee 1's
+overlay floor — architecturally consistent with the clone workflow's locked
+easy-handoff priority. §7-anticipated, §19-precedent (Strategy-resolvable within the
+ruling, operator-confirmed). Verbatim array values pending Session A code-mirror
+probe — they determine whether real EXPAND test fixtures exist (see §3 note + §14).
 
-Runtime authority is the DB CHECK (`EXPAND_EXISTING`) — Bee 3 writing the suffix
-would be rejected by the constraint. The `_HIVE` literal is never used as a *value*
-anywhere (Session A grep; its own clone-types comment marks it out-of-scope).
+## 8. Write-back semantics
 
-**Recommendation:** conform everything to the live DB literal `EXPAND_EXISTING`
-— a one-line TS-type correction + a docs note, **no migration** (the CHECK and the
-partial index already use it). The alternative (alter the CHECK to `_HIVE`) costs a
-migration on a built foundation plus a partial-index predicate change, for no gain.
-The TS-type edit touches a built+tested workflow file, so it runs with the test
-suite and operator sign-off, **separate from Bee 3's own files.**
+Writes only: `decided_at = now()`; `decision`; `decision_reason` (structured prefix
+taxonomy: `below_threshold_watching` / `existing_hive_satisfies` / `expand` /
+`clone` / `ambiguous_operator_review`); `existing_hive` (canonical hive name, EXPAND
+only; NULL otherwise). No reject-log table (apiary-scale: decision_reason on the row
+is the transparency surface, read by the Bee Farm view). No new migration.
 
-### Q2 — LLM-failure default for the fit-check
+## 9. Constants (hardcoded module constants, with rationale comments)
 
-§22 says "defer to operator review"; §6 default-bias is CLONE. But CLONE is the
-**expensive** action (config, site, integrations, seeding). Auto-CLONE on an LLM
-failure would mint expensive proposals from transient errors — an asymmetric-
-reversibility violation (cf. §19 discipline).
+- `APIARY_CLONE_THRESHOLD = 8.0` — intended-high; cloning is expensive. Carry the
+  §6 rationale + "first-fire all-watching is correct, do NOT lower" comment.
+- `DEFAULT_BATCH_SIZE = 15` — one non-grounded Haiku call/candidate (~3–5s) is far
+  cheaper than Bee 2's 25–30s Gemini chain, so 15 sits well under the 300s ceiling;
+  confirm at first fire (do NOT inherit Bee 2's batch=8, which the Gemini tail forced).
+- default-bias = CLONE — hardcoded for v1; per-operator preference deferred (§10 Q3).
 
-**Recommendation:** on fit-check LLM failure, do **not** auto-decide — leave the
-row IGNORE/watching with `decision_reason='fit_check_failed — held for operator'`
-(cheap, reversible), mirroring Bee 2's "one call's failure must not propagate" /
-5.0-default resilience principle, adapted to a categorical decision: the *safe*
-default is the cheap/reversible branch, not the default-bias branch. The §6
-default-bias-CLONE applies to **genuine ambiguity**, not to **failure**.
+## 10. Decisions for Design to ratify or redirect (step 2)
 
-### Q3 — Default-bias-CLONE: hardcoded constant or operator preference?
+These are made with rationale; Design confirms or sharpens (Bee 2 precedent).
 
-DESIGN §12 critique #2 says the EXPAND-vs-CLONE bias "should be a per-operator
-preference setting, not a fixed rule."
+- **Q1 — Literal:** Bee 3 writes `EXPAND_EXISTING` (DB CHECK authority). The
+  `EXPAND_EXISTING_HIVE` in DESIGN §6 + `clone-types.ts:23` is a phantom (never used
+  as a value). Recommend conforming both to `EXPAND_EXISTING` — one-line TS-type edit
+  + docs note, NO migration; runs separately with the clone test suite + operator
+  sign-off (touches a built workflow file, outside Bee 3's own files).
+- **Q2 — Failure default:** never auto-decide on LLM failure; leave undecided →
+  auto-retry, log the error. CLONE-bias applies to genuine ambiguity, not to failure.
+- **Q3 — CLONE-bias home:** hardcode for v1, defer the per-operator-preference
+  setting (§12 critique #2) to a later brief (per-dimension-gate discipline).
+- **Q4 — Watching/reject representation:** no new table/column; encode on the row
+  via decision + structured decision_reason; operator surface is the Bee Farm view.
+- **Q5 — Ambiguous band:** default CLONE + `ambiguous_operator_review` flag in
+  decision_reason for the frequent early-days overrides §6 expects; no new queue.
 
-**Recommendation:** hardcode default-bias-CLONE as a module constant for v1 (matches
-the house hardcoded-constants pattern + §14 "build the simplest version first"),
-and **defer** the per-operator-preference setting to a later brief with a named
-reason (per-dimension-gate discipline — don't generalise an upgrade before it's
-warranted). The operator already overrides decisions in the Bee Farm review (§15),
-so the preference setting is not blocking v1.
+## 11. Build-time probes (factual — for Session A, not Design)
 
-### Q4 — How are "watching" and the ambiguous operator-review band represented?
+1. **Hive domain-description field** — which `overlays/taxchecknow/` field holds a
+   readable domain description for the fit-prompt (vs `claim_radius_keywords`).
+2. **Claimed-suppression grain** — is `claim_radius_keywords` jurisdiction-scoped?
+   (decides EXPAND reachability — §3 dependency flag).
+3. **Spine schema home** — AS-BUILT §11/§3.4 say "Option B separate apiary schema,"
+   but Session A reached the table via `public`. Confirm the schema-qualified name
+   Bee 3's queries target.
+4. **Re-run held SQL** — confirm `decision`/`decided_at` NULL on all 56 before first fire.
+5. **Exact reuse helpers** — confirm the names of Bee 1's existing-hive overlay
+   reader and Bee 2's `callClaude`/`tryParseJsonObject` imports (mirror, don't invent).
 
-§6 says below-threshold niches sit in `status=watching` and get re-scored; §15
-describes an operator monthly "Watching list" and frequent overrides. The spine has
-**no `status` column** (architecture brief), and **no `apiary_reject_log`** exists
-(Session A).
+## 12. EXPAND consumer — live-vs-dormant (honest gap, to confirm)
 
-**Recommendation:** no new table and no new column. Encode everything on the
-candidate row via `decision='IGNORE'` + a structured `decision_reason` prefix
-(`below_threshold_watching` / `existing_hive_satisfies` / `fit_check_failed`),
-exactly as §6 L343 intends ("kept in niche_candidates for re-evaluation"). The
-operator-review surface is the existing Bee Farm view reading `decision` +
-`decision_reason`. This is the apiary-scale analogue of per-hive's reject-log
-(56 candidates / 1 hive do not warrant a separate reject table) — a **defer-with-
-named-reason**, not a "below per-hive." Confirm this is not considered "below."
+The CLONE consumer is built (Mint Hive, Fork-3-proven). The EXPAND consumer —
+feeding seed topics into an already-running hive's Strategic Queen — may not be
+wired yet. Bee 3 emits the EXPAND decision + Bee 4 writes the PENDING handoff
+regardless; if the consumer is dormant, EXPAND rows sit for operator approval (fine,
+matches §15's monthly gate). Document as live-vs-dormant the way per-hive Bee 3
+documents its dormant triggers. Operator to confirm which it is.
 
-### Q5 — Is the per-hive ambiguous-band → operator-queue pattern mirrored?
-
-Per-hive Bee 3 queues its 0.70–0.85 cosine band for operator review rather than
-auto-disposing ("the ambiguous band is where expensive mistakes live"). Apiary's
-analogue is §6's "maybe EXPAND maybe CLONE" band (tax-adjacent niches).
-
-**Recommendation:** mirror the *intent* but not a separate queue — when the Haiku
-verdict is low-confidence/ambiguous, take the §6 default (CLONE) **and** mark
-`decision_reason` with an `ambiguous_operator_review` flag so the Bee Farm view can
-surface it for the frequent early-days overrides §6 expects. No new infrastructure.
-
----
-
-## 6. Build sketch (post-ruling — for reference, not a Design question)
-
-Mirrors Bee 2's artifact set:
+## 13. Build plan (step 3)
 
 - **Create** `lib/queens/apiary-bee-3-niche-router.ts` — batch entrypoint +
-  `routeOneCandidate(...)` extracted for testability (mirror Bee 2 /
-  per-hive `scoreOneCandidate`).
+  `routeOneCandidate(...)` extracted for testability (mirror Bee 2's structure).
 - **Create** `app/api/cron/apiary-bee-3-niche-router/route.ts` — Bearer
-  `CRON_SECRET`, `maxDuration:300`, `?site=` (default `apiary`/`taxchecknow` per
-  the hive convention — confirm), `?batch=`.
-- **Reuse, no modification:** `callClaude` (`lib/bee-runner/anthropic`),
-  `tryParseJsonObject` (`lib/sources/validator`), `trackCost`
-  (`lib/cost-attribution`), `_shared/error-capture.ts`, and the existing-hive
-  overlay reader used by Bee 1's coarse suppression
-  (`site_meta.niche.{claim_radius_keywords, primary_authorities}` — see build
-  probe below).
-- **No new migration** expected — the foundation already supports the write-back
-  (Q4). The only DB-touching item is the Q1 TS-type edit, which is not a migration.
-- **Hardcoded constants:** `APIARY_CLONE_THRESHOLD = 8.0` (carry "why 8.0 / when to
-  revisit" comment, per §6), default-bias-CLONE (Q3), batch size.
-- **Batch size:** Bee 3 makes ONE non-grounded Haiku call/candidate (~3–6s),
-  far cheaper than Bee 2's 25–30s Gemini chain. Start at **batch=15** and confirm
-  against the 300s ceiling at first fire; do not assume Bee 2's batch=8 (that was
-  driven by the Gemini tail Bee 3 doesn't have).
+  `CRON_SECRET`, `maxDuration:300`, `?site=`, `?batch=` (mirror Bee 2's route.ts).
+- **Reuse, no modification:** `callClaude`, `tryParseJsonObject`, `trackCost`,
+  `_shared/error-capture.ts`, Bee 1's existing-hive overlay reader.
+- **No new migration.** Q1's TS-type edit is the only non-Bee-3 code touch, gated
+  separately.
 
-### Build-time probes for Session A (factual, not Design)
+## 14. Validation plan (step 4)
 
-1. **Hive domain-description field:** §6's fit-prompt needs each hive's *domain
-   description*. Confirm which overlay field holds a human-readable description
-   suitable for the prompt (vs `claim_radius_keywords`, which is keyword-set, not
-   prose). `overlays/taxchecknow/` inspection.
-2. **Schema home of the spine:** AS-BUILT §11/§3.4 say "Decision 8 — separate
-   apiary schema (Option B)", but Session A reached `apiary_niche_candidates` via a
-   `public` query. Confirm the schema-qualified name Bee 3's queries must target
-   (does not block this brief; blocks code).
-3. **Re-run the held SQL** (decision/decided_at NULL on all 56) to confirm
-   routability before first fire.
-
----
-
-## 7. Validation discipline (banked from §13 gotchas — applies to Bee 3's first fire)
-
-- Vercel cron-fire + curl + Supabase read-back; **never** local execution with live keys.
-- **Prompt-calibration is a first-fire diagnostic, not just a smoke test** (§20):
-  the fit-check prompt can be mechanically clean yet miscalibrated. Validate that
-  the CLONE/EXPAND verdicts *discriminate against ground truth* (e.g. a deliberately
-  tax-in-new-jurisdiction niche must come back EXPAND; `immigration-visas` must come
-  back CLONE), not merely that JSON parses. Note: with all 56 rows currently <8.0,
-  the fit-check won't fire on real data on first pass — validate it with a forced
-  above-threshold fixture so the EXPAND/CLONE branch is exercised before it ever
-  matters in production.
+- Vercel cron-fire + curl + Supabase read-back; never local execution with live keys.
+- All 56 rows are <8.0 today → the fit-check won't fire on real data first pass.
+  Exercise it with a **forced above-threshold fixture** so EXPAND/CLONE/IGNORE_CLAIMED
+  branches all run before they matter in production.
+- **Prompt-calibration as diagnostic (§20):** verify verdicts discriminate against
+  ground truth — an in-claimed-jurisdiction fixture must return IGNORE_CLAIMED;
+  immigration-visas (explicitly excluded) must return CLONE. Mechanical
+  JSON-parses-clean is necessary but NOT sufficient.
+- **EXPAND fixture (reframed, Design 2026-05-30):** because taxchecknow's claim spans
+  5 jurisdictions, a *real* production tax-EXPAND case may not exist. The EXPAND test
+  therefore uses an **artificial fixture** (a niche outside the 5 authorities — e.g.
+  "German VAT" / "Singapore GST") and is framed as **exercising the branch correctly**,
+  NOT as representing likely production traffic. Still a real test of the
+  EXPAND-vs-CLONE discriminative boundary; honest about what it proves. Whether a real
+  fixture exists at all is determined by the verbatim `claim_radius_keywords` (pending
+  the Session A probe) — construct fixtures from the real arrays, not hypothesised ones.
+- Confirm batch=15 vs the 300s ceiling; rely on proven per-candidate-UPDATE resumability.
 - Deploy-trigger empty-commit if Vercel doesn't pick up the push.
 
----
+## 15. Summary for Design
 
-## 8. One-paragraph summary for Design
-
-Bee 3 mirrors per-hive Bee 3's router skeleton at the niche→hive scope: threshold
-gate at 8.0 (intended-conservative, first-fire all-watching is correct), then a
-single non-grounded Haiku fit-check against the one live hive's domain description,
-routing EXPAND_EXISTING / CLONE_NEW_HIVE / IGNORE with default-bias CLONE. It writes
-only `decided_at/decision/decision_reason/existing_hive`; Bee 4 owns the handoff.
-No embeddings, no panelbeat triggers, no new scoring, no new table, no new migration.
-Five questions for ruling: (Q1) conform the `EXPAND_EXISTING` literal; (Q2) fail
-safe to watching, not auto-CLONE; (Q3) hardcode the CLONE bias for v1, defer the
-operator-preference setting; (Q4) represent watching/reject via decision_reason, no
-new table; (Q5) flag ambiguous-band for operator review via decision_reason, no new
-queue.
+A threshold gate at 8.0 (intended-conservative) plus one non-grounded Haiku
+fit-check against the existing-hive inventory, routing CLONE/EXPAND/IGNORE with a
+jurisdiction-grained suppression boundary and default-bias CLONE. No embeddings, no
+panelbeat triggers, no new scoring, no new table, no new migration. Five ratification
+points (Q1–Q5), all leaning cheap + reversible + mirror-the-house-pattern; five
+factual build-time probes; one honest live-vs-dormant gap (EXPAND consumer).
