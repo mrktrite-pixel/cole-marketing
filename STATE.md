@@ -1,104 +1,71 @@
 # Apiary Strategic Queen — State (cold-start handoff)
 
 **Read this first.** Single-page handoff for a fresh chat picking up Apiary
-Strategic Queen work cold.
+Strategic Queen work cold. Last refreshed 2026-05-31.
 
 ## What the Apiary Queen is
 
-The **cross-niche scout** — one layer above all hives. Per-hive Strategic Queens
-find new *topics* within their niche; she finds entirely new *niches* COLE
-should add as hives. Four bees, same shape as the per-hive queen scoped up:
-**hunt (niches) → score (viability) → route (clone/expand/ignore) → compose
-(the CLONE_NEW_HIVE handoff)**. She is the growth engine that makes COLE
-compound from one tax hive into many. Full outcome design:
-`cole-marketing/APIARY-STRATEGIC-QUEEN-DESIGN-DAY13.md`.
+The **cross-niche scout** — one vanilla layer above all hives. It hunts
+citation-gap niches across the whole internet and routes winners via four bees.
+Only live hive today is **taxchecknow** (6 jurisdictions: ATO/HMRC/IRS/IRD-NZ/CRA
++ nomad). Apiary is apiary-scoped; each bee is an independent cron, no orchestrator.
 
-## Build status
+## Current status — ALL FOUR BEES BUILT
 
-| Bee | Role | Status |
-|---|---|---|
-| **Bee 1 — Niche Hunter** | Wide scan → `niche_candidates` | **SPEC LOCKED, NOT BUILT** — `bees/bee-1-niche-hunter.md` |
-| **Bee 2 — Niche Scorer** | Niche viability score | SPEC ONLY (Day-13 §5) |
-| **Bee 3 — Niche Router** | CLONE / EXPAND / IGNORE | SPEC ONLY (Day-13 §6) |
-| **Bee 4 — Clone Proposal Composer** | `apiary_strategic_handoffs` row | SPEC ONLY (Day-13 §7) |
+| Bee | State |
+|---|---|
+| **Bee 1 — Niche Hunter** | **LIVE.** Drained 2026-05-29: 152 surfaced, 56 eligible. |
+| **Bee 2 — Niche Scorer** | **LIVE.** Drained 2026-05-30: 56/56 scored, ~$0.43, top 7.39. |
+| **Bee 3 — Niche Router** | **BUILT 2026-05-31**, validated (56-row drain + 6/6 fixtures), documented. Cron HELD. Build `c87aea0`; docs `15d81c8`/`4f71398`. |
+| **Bee 4 — Handoff Composer** | **BUILT 2026-05-31**, validated (empty fire + 2/2 fixtures), documented. Cron HELD. Chain `460edcb → 7f89290 → 79ca5ed → 37d436f` (+ migration `c614ed4`, slugify `a037f80`, rename `6ca738e`). |
 
-**Nothing is built yet.** This is net-new construction (Day-13 §14). We are at:
-Bee 1 scoped + Design-reviewed + locked + documented (Step 4 done). Next is
-Step 5 — build Bee 1, starting with the table-convention ruling + migration.
+The whole queen is **built and HELD** — manual curl fires only, **zero `apiary-bee`
+entries in `vercel.json`.**
 
-## How we got here (the verify-before-compose trail)
+## Go-live gates — both BLOCKING, both briefed + routed to Design
 
-Three READ-ONLY Session-A probes + Design-chat input grounded the Bee 1 spec.
-Do NOT re-derive from memory — the findings are banked in the Bee 1 spec's
-"Provenance" section. Headlines:
-- The per-hive Strategic "Queen" is a **synthesis cron route + bees, not a
-  class**; the bees are **config-driven and tax-clean in logic** (vanilla held).
-- The overlay loader is **site-agnostic** — `overlays/apiary/strategic-v2.json`
-  loads cleanly; a minimal apiary overlay validates (no taxchecknow-shaped
-  fields required).
-- The **blacklist already exists** (`lib/cluster/blacklist-filter.ts`) but is
-  **topic-granular** — it false-blocks niches that merely mention a banned word,
-  so Bee 1 feeds it **niche labels**, not raw text (Shape B + targeted rescue).
-- Hive-niche identity is readable only as a **fingerprint**
-  (`site_meta.niche.claim_radius_keywords` + `primary_authorities`) — no
-  canonical niche slug; `getSites()` ≠ sites-with-overlays (drift).
+1. **Fork-2b canonical `niche_registry`.** Table migration shipped (`80f6321`,
+   empty). Integration brief filed (`4caf233`) → **awaiting Design ruling** on
+   site_registry / population / cutover order / columns. On ruling, build order:
+   seed → Bee 3 reader (dual-read) → Bee 1 blacklist gate → Bee 1 suppression.
+2. **API cost/balance monitoring tile.** Researched: no provider balance API
+   exists, and `agent_log` does not capture failed calls. Amendment brief filed
+   (`417b74b`) → **awaiting Design ruling** on A (native auto-recharge + budget
+   alerts), B (add failure-capture to `callClaudeTracked`/`trackCost` — the
+   load-bearing fix), C (`agent_log`-backed tile). Operator-check: is the COLE
+   Anthropic account an **organization** (admin-key-capable)?
+3. **Anthropic auto-recharge + Gemini auto-reload** — operator-check, interim
+   stop-bleed (part of cost-monitor Ruling A).
+4. **`vercel.json` apiary cron** — register only after 1+2 clear.
 
-## The keystone design bet (honest status)
+## Locked decisions (ratified, in cole-marketing)
 
-The single thing we could NOT verify in advance: whether **niche-label
-derivation** (turning a wide signal like *"how is crypto staking taxed"* into a
-clean niche label + confidence) is cheap or is the *hardest part of Bee 1*. The
-table she writes (`niche_candidates`) is design-only — there was nothing to read.
-The spec treats derivation as a **core step she must perform**, not a free
-byproduct. Its stability is the #1 thing the first live fire validates. This is
-a design bet built to be tested, not a verified fact — flagged so no future chat
-mistakes it for one.
-
-## Locked decisions (Step 3)
-
-- **Blacklist:** Shape B (filter the derived niche label) + targeted Haiku
-  rescue gated on `APIARY_NICHE_CONFIDENCE_FLOOR` (named tunable const, init
-  `0.6`) OR banned/non-banned ambiguity. Reuse the existing filter; no migration.
-- **Claimed-niche suppression:** coarse-auto in Bee 1 (set-overlap on existing
-  hives' niche fingerprints), fuzzy near-niche judgment deferred to Bee 3,
-  operator override always. Caveat: only as good as the thin hive-inventory.
-- **Config home:** `overlays/apiary/strategic-v2.json`.
-- **Table convention:** `hive` for Apiary, `site` for per-hive, explicit
-  mapping. Rule formally before the migration.
-- **Edit-surface:** deferred (blacklist stays a checked-in file).
-- **`cross_hive_learnings`:** built `enabled:false` until Orchestrator exists.
-
-## Open prerequisites (resolve at/before build)
-
-1. **Table-convention ruling** (Design) — then `niche_candidates` + apiary
-   hypotheses migration on the `hive` convention, incl. hive↔site mapping.
-2. **Routine-schema decision** — the V2 `RoutineSchema.name` enum is the 6
-   per-hive routines; apiary routine names (`adjacent_niche_scan`,
-   `cross_hive_learnings`) need an extended enum or an apiary schema. Do NOT
-   silently reuse the per-hive enum.
-3. **`niche_candidates` final columns** — ruled at migration time.
-
-## Dashboard (not built)
-
-She needs her own surface, selected by the dropdown swapping to `apiary`. The
-loader supports `'apiary'`; the dropdown's swap-the-whole-surface mechanism does
-NOT exist (current dropdown is hard-scoped to sites — `?site=` + `.eq("site",…)`
-everywhere). Mirror the per-hive Monitor panel
-(`/dashboard/monitor/strategic-queen` + `getStrategicQueenMonitor`). UI build is
-its own stone, after the bees.
+- Bee 3: routing brief `APIARY-BEE3-ROUTING-FOR-DESIGN.md` (`22b9035`) + scope
+  addendum `APIARY-SCOPE-ADDITION-FOR-DESIGN.md` (`622b363`).
+- Bee 4: handoff brief `APIARY-BEE4-HANDOFF-FOR-DESIGN.md` (`3b4a0d2`) +
+  dispatcher design `APIARY-BEE4-DISPATCHER-FOR-DESIGN.md` (`1e4b724`).
+- Fork-2b: registry log + integration brief `APIARY-FORK2B-INTEGRATION-FOR-DESIGN.md`.
+  Registry = single status-keyed table, no pgvector, no centralized matcher.
+- Cost-monitor: `COST-MONITORING-AMENDMENT-FOR-DESIGN.md`.
+- Token tiers (cole-brain): Bee 2 = Haiku×3 + Gemini; Bee 3 = Opus (`claude-opus-4-7`);
+  Bee 4 = Haiku thick-stub on CLONE only. Batch sizes: Bee 2 = 8, Bee 3 = 20, Bee 4 = 20.
+- Cron posture: all four HELD until the two gates clear; manual curl fires are
+  operator-driven and do not trip any first-run gate.
 
 ## Next step
 
-**Step 5 — build Bee 1**, in order (one directive each, banked + pushed):
-table-convention ruling → migration → routine-schema → apiary overlay →
-niche-label derivation helper (keystone, build + unit-test isolated) →
-blacklist wrapper → suppression helper → 2 live routines + dispatcher → cron →
-first live fire → convert the Bee 1 spec to as-built.
+Await the two Design rulings (Fork-2b integration; cost-monitor A/B/C). On each
+ruling, build that gate one step at a time, validate, then — once both gates are
+done — register the apiary crons in `vercel.json`. Nothing else is build-ready;
+proceeding before the rulings would be guessing on changes that touch the LIVE
+Bee 1/2 loop and a shared LLM wrapper.
 
-## Doc pointers
+## Canonical docs
 
-- `bees/bee-1-niche-hunter.md` — the locked Bee 1 spec (full detail + provenance).
-- `README.md` — index.
-- `DESIGN.md` — decisions log.
-- `cole-marketing/APIARY-STRATEGIC-QUEEN-DESIGN-DAY13.md` — original design §1–§17.
-- Per-hive template mirrored: `docs/help/strategic-queen-v2/`.
+- As-built (authoritative): `soverella/docs/help/apiary-strategic-queen/` —
+  `README` / `STATE.md` / `DESIGN.md`, `bees/bee-{1,2,3,4}-*.md`, and
+  `queen/APIARY-STRATEGIC-QUEEN-AS-BUILT.md` (§1–14 queen, §15–23 Bee 2,
+  §24–32 Bee 3, §33–40 Bee 4).
+- Durable design briefs: `cole-marketing/` (the FOR-DESIGN briefs above).
+- NOTE: this is the cole-marketing mirror; the soverella copy at
+  `docs/help/apiary-strategic-queen/STATE.md` is the in-repo authoritative state.
