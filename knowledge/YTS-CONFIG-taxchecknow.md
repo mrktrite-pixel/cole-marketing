@@ -46,6 +46,7 @@ packaging_rewrap_cap: 2
 hook_rewrap_cap: 2
 maturity_view_floor: 300
 render_floor: { min_s: 20, max_s: 180 }                       # 10b — shorts duration band the render must land in to mint
+auto_approve: { gate1_short: false, gate1_expansion: false }  # YT-M2 — true lets the tick auto-stamp ONLY where yt-m2 recommends approve + zero hard-fails. ALL FALSE until the operator's explicit word.
 ```
 
 ## Render floor (Step 10b)
