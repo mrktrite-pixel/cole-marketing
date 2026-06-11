@@ -33,6 +33,7 @@ packaging_rewrap_cap: 3
 hook_recut_cap: 1
 maturity: { days: 28, view_floor: 500 }
 no_touch_hours: 24                         # code-side teeth at L7
+render_floor: { min_s: 240, max_s: 480 }   # L6 — long duration band (4-8min) the render must land in to publish
 aspirational_not_enforced:
   first_30s_retention_pct: 70              # S2: named, not silent
 ```
