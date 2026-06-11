@@ -41,7 +41,7 @@ Pool short → the scheduler plans **fewer** slots and emits a
 lanes: { foundling: 3, winner_rewrap: 0, loser_rewrap: 0 }   # bootstrap
 slot_times: ["09:00", "14:00", "19:00"]                       # AWST
 min_spacing_hours: 4
-plan_ahead_days: 2
+plan_ahead_days: 3
 packaging_rewrap_cap: 2
 hook_rewrap_cap: 2
 maturity_view_floor: 300
