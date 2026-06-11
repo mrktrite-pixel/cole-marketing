@@ -26,6 +26,7 @@ no code enforces it yet.
 
 ```yaml
 lanes: { ytl_winner: 1, ytl_pick: 0 }     # per WEEK
+ytl_pick: ""                               # operator-named product_key for the pick lane (interim storage; empty = use ytl_winner)
 slot: { day: "tuesday", time: "09:00" }    # AWST
 horizon_days: 14
 packaging_rewrap_cap: 3
