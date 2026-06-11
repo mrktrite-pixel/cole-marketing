@@ -45,4 +45,14 @@ plan_ahead_days: 3
 packaging_rewrap_cap: 2
 hook_rewrap_cap: 2
 maturity_view_floor: 300
+render_floor: { min_s: 20, max_s: 180 }                       # 10b — shorts duration band the render must land in to mint
 ```
+
+## Render floor (Step 10b)
+
+Before a rendered short mints a `content_assets` row, the scheduler checks the
+worker's `render_meta` (ffprobe): it must **have audio**, be **> 1 MB**, and its
+duration must sit inside `render_floor` (seconds). A render that finishes but
+misses the bar becomes `render_jobs.status = 'floor_failed'` — reported in the
+tick, never silently retried. Renders from before 10b have no `render_meta`; the
+floor **legacy-guards** them through (it only judges what it can see).
