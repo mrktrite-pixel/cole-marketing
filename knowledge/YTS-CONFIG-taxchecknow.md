@@ -45,7 +45,9 @@ plan_ahead_days: 3
 packaging_rewrap_cap: 2
 hook_rewrap_cap: 2
 maturity_view_floor: 300
-render_floor: { min_s: 20, max_s: 180 }                       # 10b — shorts duration band the render must land in to mint
+render_floor: { min_s: 20, max_s: 90 }                        # 10b/R4 — shorts duration band the render must land in to mint (tightened from 180)
+script_target_s: 35                                           # R4 — shorts script target seconds (was 45)
+script_band: { min_s: 32, max_s: 38 }                         # R4 — yt-m2 hard-fails a short script estimate outside this band
 auto_approve: { gate1_short: false, gate1_expansion: false }  # YT-M2 — true lets the tick auto-stamp ONLY where yt-m2 recommends approve + zero hard-fails. ALL FALSE until the operator's explicit word.
 ```
 
