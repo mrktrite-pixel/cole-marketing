@@ -17,7 +17,7 @@ operator's jurisdiction-grained boundary ruling (2026-05-30, this session).
 
 Apiary Bee 3 is a **router**: mirror of per-hive Bee 3's skeleton, lifted to the
 niche→hive scope. It reads scored-undecided niche candidates, gates on an 8.0
-threshold, then makes ONE non-grounded Haiku fit-check against the existing-hive
+threshold, then makes ONE non-grounded Opus fit-check against the existing-hive
 inventory, and writes `CLONE_NEW_HIVE` / `EXPAND_EXISTING` / `IGNORE` back to the
 row. Bee 4 consumes the decision. Bee 3 produces no proposal content.
 
@@ -82,7 +82,8 @@ on the verbatim `claim_radius_keywords` — pending the Session A probe; do not 
 | Threshold | `overall_score >= 8.0`; first-fire all-IGNORE/watching is intended | DESIGN §6 step 1; AS-BUILT §21 L416 |
 | Default-bias | CLONE when in doubt | DESIGN §6 critique; AS-BUILT §22 L452 |
 | Routing-not-scoring | Bee 3 computes NO new scoring; consumes Bee 2 outputs only | AS-BUILT §17 L305, §22 L453 |
-| Grounding gate | NO grounding — durable taxonomic judgment uses plain Haiku | DESIGN §18 Fork 3 |
+| Grounding gate | NO grounding — durable taxonomic judgment (grounding axis only) | DESIGN §18 Fork 3 |
+| Model tier | **Opus (Tier 3)** — routing IS a "Strategic Queen decision" (corrects the ratified Haiku) | cole-brain token routing `SKILL.md` L75–78 |
 | Config | hardcoded module constants, not overlay | AS-BUILT §11; per-hive Bee 3 L101–109 |
 | No new table / no panelbeat triggers | confirmed | architecture brief; Session A |
 
@@ -116,7 +117,7 @@ existing-hive inventory empty ? ── YES ──► CLONE_NEW_HIVE  (data-drive
         │
         NO
         ▼
-fit-check (single Haiku, no grounding)  → {verdict, target_hive, new_jurisdiction, confidence, reasoning}
+fit-check (single Opus call, no grounding)  → {verdict, target_hive, new_jurisdiction, confidence, reasoning}
         │
         ├─ verdict EXPAND_EXISTING      → EXPAND_EXISTING; existing_hive=target_hive
         │                                 decision_reason='expand: <new jurisdiction / sub-topic> of <hive>'
@@ -136,8 +137,22 @@ from the zero-hive data condition above, which is a legitimate CLONE.
 
 ## 7. The fit-check call (the load-bearing creative element)
 
-**Model:** Haiku via `callClaude` (per-hive's durable-dimension pattern; no
-grounding per §18 Fork 3). One call per candidate.
+**Model:** **Opus (Tier 3)** via `callClaude`, one call per candidate. This is
+*mandated*, not chosen: cole-brain token routing (`SKILL.md` L75–78) reserves Tier 3
+Opus for **"Strategic Queen decisions only"**, and the CLONE/EXPAND/IGNORE call is
+the Apiary Strategic Queen's core decision (whether to spawn/extend a business hive).
+**No grounding** — the §18 per-dimension gate concerns *grounding* (current-info
+need), an axis orthogonal to *tier*; the fit-check is a durable domain-boundary
+judgment that needs no current information, but its consequence profile (a new hive =
+quarter-scale commitment, §15) is squarely Tier-3 routing work, not Tier-1 extraction.
+**Exact Opus model string: VERIFY against the codebase — do not guess.** cole-brain
+pins only the Haiku string (`claude-haiku-4-5-20251001`); it names "Opus" without an
+API string, and nothing built uses Opus yet (Orchestrator is spec-only). Confirm how
+`callClaude` resolves the model and what Opus string the cluster uses before coding
+the call. **Correction note:** this overturns the originally-ratified Haiku (the §4
+settled-foundations table listed plain Haiku), which conflicted with the mandatory convention surfaced from the Bee 2
+spec's token-routing section — Design to be notified; convention outranks the
+pre-convention ratification.
 
 **Prompt — calibration-aware (per §20: framing must discriminate, not prime a
 verdict).** Neutral classification, explicit criteria, conservative-merge instruction:
@@ -165,7 +180,7 @@ verdict).** Neutral classification, explicit criteria, conservative-merge instru
 NO readable domain-description field (Session A probe). Bee 3 reads the hive's
 boundary directly from the three `site_meta.niche` arrays in
 `overlays/<hive>/strategic.json` — the structured source of truth, not a drift-prone
-prose summary. The three arrays are kept as **three labelled prompt fields** so Haiku
+prose summary. The three arrays are kept as **three labelled prompt fields** so the model
 treats them as distinct signals: keywords = domain signal, authorities = jurisdiction
 signal, exclusions = **negative** signal (the most decision-useful field — e.g.
 taxchecknow's `explicit_exclusions` listing "immigration scope" resolves the
@@ -188,9 +203,15 @@ is the transparency surface, read by the Bee Farm view). No new migration.
 
 - `APIARY_CLONE_THRESHOLD = 8.0` — intended-high; cloning is expensive. Carry the
   §6 rationale + "first-fire all-watching is correct, do NOT lower" comment.
-- `DEFAULT_BATCH_SIZE = 15` — one non-grounded Haiku call/candidate (~3–5s) is far
-  cheaper than Bee 2's 25–30s Gemini chain, so 15 sits well under the 300s ceiling;
-  confirm at first fire (do NOT inherit Bee 2's batch=8, which the Gemini tail forced).
+- `APIARY_ROUTER_MODEL` — the Opus model string (Tier 3, per cole-brain). **VERIFY
+  the exact string before coding; do not guess** (cole-brain names "Opus" without an
+  API string; nothing built uses Opus yet).
+- `DEFAULT_BATCH_SIZE` — **confirm at first fire.** The fit-check is one Opus call per
+  candidate; Opus per-call latency is higher than Haiku, so do NOT use a Haiku-speed
+  estimate. Start conservative (~10) and measure against the 300s ceiling, leaning on
+  the proven per-candidate-UPDATE resumability. Note: today nothing crosses 8.0, so
+  the fit-check fires on zero rows — real batch tuning happens once scores cross the
+  threshold.
 - default-bias = CLONE — hardcoded for v1; per-operator preference deferred (§10 Q3).
 
 ## 10. Decisions for Design to ratify or redirect (step 2)
@@ -267,7 +288,7 @@ documents its dormant triggers. Operator to confirm which it is.
 
 ## 15. Summary for Design
 
-A threshold gate at 8.0 (intended-conservative) plus one non-grounded Haiku
+A threshold gate at 8.0 (intended-conservative) plus one non-grounded Opus
 fit-check against the existing-hive inventory, routing CLONE/EXPAND/IGNORE with a
 jurisdiction-grained suppression boundary and default-bias CLONE. No embeddings, no
 panelbeat triggers, no new scoring, no new table, no new migration. Five ratification
